@@ -1,0 +1,59 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: db/Dockerfile
+    container_name: quindioflix-oracle
+    ports:
+      - "1521:1521"
+      - "5500:5500"
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD:-Quindioflix123}
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+    restart: unless-stopped
+    networks:
+      - quindioflix-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: quindioflix-backend
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DB_HOST: db
+      DB_PORT: 1521
+      DB_USER: system
+      DB_PASSWORD: ${ORACLE_PASSWORD:-Quindioflix123}
+      DB_SID: XE
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - quindioflix-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3001
+        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-}
+    container_name: quindioflix-frontend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - quindioflix-network
+
+volumes:
+  oracle-data:
+
+networks:
+  quindioflix-network:
+    driver: bridge
