@@ -49,53 +49,6 @@ pnpm format
 pnpm check
 ```
 
-
-## Setting up Clerk
-
-1. Sign up at [clerk.com](https://clerk.com) and create an application
-2. Copy the **Publishable Key** from the Clerk dashboard
-3. Set it in your `.env.local`:
-   ```bash
-   VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
-   ```
-4. Visit the demo route at `/demo/clerk` once `npm run dev` is running
-
-### What's wired up
-
-- **`<ClerkProvider>`** at the app root (`src/integrations/clerk/provider.tsx`) handles auth context for the whole tree
-- **`<SignInButton>` / `<UserButton>`** in the header swap based on auth state
-- **`/demo/clerk`** shows Clerk's prebuilt sign-in UI and a signed-in greeting
-
-### Protecting a route
-
-Wrap any component in `<SignedIn>` / `<SignedOut>`:
-
-```tsx
-import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
-
-function ProtectedPage() {
-  return (
-    <>
-      <SignedIn>
-        <YourPageContent />
-      </SignedIn>
-      <SignedOut>
-        <RedirectToSignIn />
-      </SignedOut>
-    </>
-  )
-}
-```
-
-For server-side checks (route loaders, server functions), see the Clerk docs on [`auth()`](https://clerk.com/docs/references/backend/auth).
-
-### Production checklist
-
-- Replace the test keys with **production keys** from a dedicated production Clerk instance
-- Configure your production domain under **Domains** in the Clerk dashboard
-- Set up social providers (Google, GitHub, etc.) under **User & Authentication → Social Connections**
-
-
 # Resume Example
 
 A professional resume template built with TanStack Start and content-collections for Netlify deployment.
@@ -110,73 +63,25 @@ A professional resume template built with TanStack Start and content-collections
 ## Project Structure
 
 ```
-├── content/
-│   ├── jobs/              # Work experience entries
-│   └── education/         # Education entries
 ├── src/
 │   ├── components/
-│   │   └── ui/            # Shadcn UI components
-│   │       ├── badge.tsx
-│   │       ├── card.tsx
-│   │       ├── checkbox.tsx
-│   │       ├── hover-card.tsx
-│   │       └── separator.tsx
 │   ├── lib/
 │   │   └── utils.ts       # Utility functions
+│   ├── modules/
 │   └── routes/
 │       ├── __root.tsx     # Root layout
 │       └── index.tsx      # Resume page
 └── public/
-    └── headshot-on-white.jpg
-```
-
-## Adding Work Experience
-
-Create a new markdown file in `content/jobs/` with the following frontmatter:
-
-```markdown
----
-jobTitle: Your Job Title
-company: Company Name
-location: City, State
-startDate: 2024-01-01
-endDate: 2024-12-31  # Optional - omit for current position
-summary: Brief summary of your role
-tags:
-  - React
-  - TypeScript
-  - Web Development
----
-
-Detailed description of your responsibilities and achievements...
-```
-
-## Adding Education
-
-Create a new markdown file in `content/education/`:
-
-```markdown
----
-school: School Name
-summary: Degree or Program Name
-startDate: 2020-01-01
-endDate: 2024-01-01
-tags:
-  - Relevant
-  - Skills
----
-
-Details about your education...
 ```
 
 ## Development
 
 ```bash
 # Start development server
-npm run dev
+pnpm run dev
 
 # Build for production
-npm run build
+pnpm run build
 ```
 
 

@@ -1,0 +1,37 @@
+:root {
+  --bg-0: oklch(0.12 0.008 60);
+  --bg-1: oklch(0.16 0.010 60);
+  --bg-2: oklch(0.21 0.013 60);
+  --bg-3: oklch(0.26 0.016 60);
+  --bg-4: oklch(0.32 0.018 60);
+
+  --border-soft: oklch(0.28 0.014 60);
+  --border: oklch(0.34 0.018 60);
+  --border-strong: oklch(0.44 0.022 60);
+
+  --fg: oklch(0.96 0.008 80);
+  --fg-2: oklch(0.78 0.012 75);
+  --fg-3: oklch(0.58 0.014 70);
+  --fg-4: oklch(0.42 0.014 65);
+
+  --accent: oklch(0.82 0.135 75);
+  --accent-deep: oklch(0.68 0.135 60);
+  --accent-soft: oklch(0.82 0.135 75 / 0.14);
+  --sage: oklch(0.72 0.085 160);
+  --sage-soft: oklch(0.72 0.085 160 / 0.15);
+  --rose: oklch(0.70 0.135 25);
+  --rose-soft: oklch(0.70 0.135 25 / 0.15);
+  --sky: oklch(0.78 0.085 230);
+
+  --font-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-ui: "DM Sans", -apple-system, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+
+  --shadow-card: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 10px 30px -10px oklch(0 0 0 / 0.6);
+  --shadow-pop: 0 1px 0 oklch(1 0 0 / 0.05) inset, 0 24px 60px -20px oklch(0 0 0 / 0.8);
+}

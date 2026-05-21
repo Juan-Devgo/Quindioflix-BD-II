@@ -1,0 +1,16 @@
+**/node_modules
+**/*.env
+*.local
+**/*.git
+.DS_Store
+dist
+dist-ssr
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+__unconfig*
+todos.json
+.vscode
+.cta.json
