@@ -28,16 +28,6 @@
 --  19.  PAGO
 --  20.  RESTRICCION_DOMINIO
 --  21.  ÍNDICES
--- ============================================================
-
-
--- ============================================================
--- 0. Creación de un usuario que tenga las tablas de QUINDIOFLIX
--- ============================================================
-
-CREATE USER c_quindioflix IDENTIFIED BY quindioflix123;
-
-
 
 -- ============================================================
 -- 1. PLAN_SUSCRIPCION
@@ -313,10 +303,21 @@ CREATE TABLE EPISODIO (
 -- 15. REPRODUCCION
 --     Restricción XOR: debe referenciar exactamente uno entre
 --     id_contenido (película/doc/música) e id_episodio (serie/podcast).
+--     Fragmentación por rango de fecha (tablespaces 2024 y 2025).
 -- ============================================================
+
+-- Tablespaces para fragmentación de Reproducciones
+CREATE TABLESPACE ts_reproducciones_2024
+    DATAFILE 'ts_repr_2024.dbf' SIZE 100M AUTOEXTEND ON NEXT 50M MAXSIZE 500M;
+
+CREATE TABLESPACE ts_reproducciones_2025
+    DATAFILE 'ts_repr_2025.dbf' SIZE 100M AUTOEXTEND ON NEXT 50M MAXSIZE 500M;
+    
+CREATE TABLESPACE ts_reproducciones_2026
+    DATAFILE 'ts_repr_2026.dbf' SIZE 100M AUTOEXTEND ON NEXT 50M MAXSIZE 500M;
+
 CREATE TABLE REPRODUCCION (
-    id_reproduccion   NUMBER         GENERATED ALWAYS AS IDENTITY
-                                     CONSTRAINT pk_reproduccion PRIMARY KEY,
+    id_reproduccion   NUMBER         GENERATED ALWAYS AS IDENTITY,
     id_perfil         NUMBER         NOT NULL,
     id_contenido      NUMBER,         -- para PELICULA, DOCUMENTAL, MUSICA
     id_episodio       NUMBER,         -- para episodios de SERIE o PODCAST
@@ -324,6 +325,7 @@ CREATE TABLE REPRODUCCION (
     fecha_fin         TIMESTAMP,
     dispositivo       VARCHAR2(15)   NOT NULL,
     porcentaje_avance NUMBER(5,2)    DEFAULT 0 NOT NULL,
+    CONSTRAINT pk_reproduccion PRIMARY KEY (id_reproduccion),
     CONSTRAINT chk_repr_dispositivo CHECK (dispositivo IN ('CELULAR','TABLET','TV','COMPUTADOR')),
     CONSTRAINT chk_repr_avance      CHECK (porcentaje_avance BETWEEN 0 AND 100),
     CONSTRAINT chk_repr_fechas      CHECK (fecha_fin IS NULL OR fecha_fin >= fecha_inicio),
@@ -334,6 +336,14 @@ CREATE TABLE REPRODUCCION (
     CONSTRAINT fk_repr_perfil    FOREIGN KEY (id_perfil)    REFERENCES PERFIL(id_perfil),
     CONSTRAINT fk_repr_contenido FOREIGN KEY (id_contenido) REFERENCES CONTENIDO(id_contenido),
     CONSTRAINT fk_repr_episodio  FOREIGN KEY (id_episodio)  REFERENCES EPISODIO(id_episodio)
+)
+PARTITION BY RANGE (fecha_inicio) (
+    PARTITION p2024 VALUES LESS THAN (TO_DATE('2025-01-01','YYYY-MM-DD'))
+        TABLESPACE ts_reproducciones_2024,
+    PARTITION p2025 VALUES LESS THAN (TO_DATE('2026-01-01','YYYY-MM-DD'))
+        TABLESPACE ts_reproducciones_2025,
+    PARTITION p2026 VALUES LESS THAN (TO_DATE('2027-01-01','YYYY-MM-DD'))
+        TABLESPACE ts_reproducciones_2026
 );
 
 -- REPRODUCCION.id_contenido: Referenciado solo para contenido sin episodios (película, documental, música).
@@ -519,10 +529,11 @@ COMMIT;
 -- ============================================================
 
 -- Usuarios
-CREATE INDEX idx_usuario_ciudad       ON USUARIO(id_ciudad);
-CREATE INDEX idx_usuario_plan         ON USUARIO(id_plan);
-CREATE INDEX idx_usuario_estado       ON USUARIO(estado);
+CREATE BITMAP INDEX idx_usuario_ciudad       ON USUARIO(id_ciudad);
+CREATE BITMAP INDEX idx_usuario_plan         ON USUARIO(id_plan);
+CREATE BITMAP INDEX idx_usuario_estado       ON USUARIO(estado);
 CREATE INDEX idx_usuario_referidor    ON USUARIO(id_referidor);
+CREATE INDEX idx_usuario_email       ON USUARIO(email);
 
 -- Perfiles
 CREATE INDEX idx_perfil_usuario       ON PERFIL(id_usuario);
@@ -533,16 +544,17 @@ CREATE INDEX idx_cont_tipo            ON CONTENIDO(tipo);
 CREATE INDEX idx_cont_clasificacion   ON CONTENIDO(clasificacion_edad);
 CREATE INDEX idx_cont_fecha_catalogo  ON CONTENIDO(fecha_agregado_catalogo);
 CREATE INDEX idx_cont_empleado        ON CONTENIDO(id_empleado_responsable);
+CREATE INDEX idx_cont_categoria_anio  ON CONTENIDO(id_categoria, anio_lanzamiento);
 
 -- Reproducción (base de los reportes de consumo)
 CREATE INDEX idx_repr_perfil          ON REPRODUCCION(id_perfil);
 CREATE INDEX idx_repr_contenido       ON REPRODUCCION(id_contenido);
 CREATE INDEX idx_repr_episodio        ON REPRODUCCION(id_episodio);
-CREATE INDEX idx_repr_fecha_inicio    ON REPRODUCCION(fecha_inicio);
+CREATE INDEX idx_repr_fecha_inicio    ON REPRODUCCION(fecha_inicio) LOCAL;
 CREATE INDEX idx_repr_dispositivo     ON REPRODUCCION(dispositivo);
 
 -- Índice compuesto: consumo por período (reportes de gerencia)
-CREATE INDEX idx_repr_perfil_fecha    ON REPRODUCCION(id_perfil, fecha_inicio);
+CREATE INDEX idx_repr_perfil_fecha    ON REPRODUCCION(id_perfil, fecha_inicio) LOCAL;
 
 -- Pagos (reportes financieros)
 CREATE INDEX idx_pago_usuario         ON PAGO(id_usuario);
