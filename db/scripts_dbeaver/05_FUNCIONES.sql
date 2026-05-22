@@ -1,24 +1,24 @@
-PROMPT ============================================================
-PROMPT QUINDIOFLIX - FUNCIONES ALMACENADAS
-PROMPT Versión: 1.0
-PROMPT ============================================================
-PROMPT Funciones de negocio:
-PROMPT a) FN_CALCULAR_MONTO      – monto a cobrar con descuento
-PROMPT por antigüedad (fidelidad).
-PROMPT b) FN_CONTENIDO_RECOMENDADO – título de contenido sugerido
-PROMPT según el género más consumido por un perfil.
-PROMPT ============================================================
+-- ============================================================
+-- QUINDIOFLIX - FUNCIONES ALMACENADAS
+-- Versión: 1.0
+-- ============================================================
+-- Funciones de negocio:
+-- a) FN_CALCULAR_MONTO      – monto a cobrar con descuento
+-- por antigüedad (fidelidad).
+-- b) FN_CONTENIDO_RECOMENDADO – título de contenido sugerido
+-- según el género más consumido por un perfil.
+-- ============================================================
 
-SET SERVEROUTPUT ON;
+-- SET SERVEROUTPUT ON;
 
-PROMPT ============================================================
-PROMPT a) FN_CALCULAR_MONTO
-PROMPT Recibe un id_usuario y devuelve el monto que le
-PROMPT corresponde pagar el próximo mes, aplicando el descuento
-PROMPT por fidelidad:
-PROMPT · > 12 meses : 10 %
-PROMPT · > 24 meses : 15 %
-PROMPT ============================================================
+-- ============================================================
+-- a) FN_CALCULAR_MONTO
+-- Recibe un id_usuario y devuelve el monto que le
+-- corresponde pagar el próximo mes, aplicando el descuento
+-- por fidelidad:
+-- · > 12 meses : 10 %
+-- · > 24 meses : 15 %
+-- ============================================================
 CREATE OR REPLACE FUNCTION FN_CALCULAR_MONTO (
     p_id_usuario IN NUMBER
 ) RETURN NUMBER IS
@@ -59,17 +59,16 @@ EXCEPTION
     WHEN OTHERS THEN
         RAISE_APPLICATION_ERROR(-20050, 'Error en FN_CALCULAR_MONTO: ' || SQLERRM);
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT b) FN_CONTENIDO_RECOMENDADO
-PROMPT Recibe un id_perfil y devuelve el título del contenido
-PROMPT más relevante, basado en el género que más ha visto el
-PROMPT perfil.  Como criterio de desempate se elige el contenido
-PROMPT con mejor calificación promedio y, de persistir el empate,
-PROMPT el más recientemente agregado al catálogo.
-PROMPT ============================================================
+-- ============================================================
+-- b) FN_CONTENIDO_RECOMENDADO
+-- Recibe un id_perfil y devuelve el título del contenido
+-- más relevante, basado en el género que más ha visto el
+-- perfil.  Como criterio de desempate se elige el contenido
+-- con mejor calificación promedio y, de persistir el empate,
+-- el más recientemente agregado al catálogo.
+-- ============================================================
 CREATE OR REPLACE FUNCTION FN_CONTENIDO_RECOMENDADO (
     p_id_perfil IN NUMBER
 ) RETURN VARCHAR2 IS
@@ -122,12 +121,11 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE('Error en FN_CONTENIDO_RECOMENDADO: ' || SQLERRM);
         RAISE_APPLICATION_ERROR(-20051, 'Error en FN_CONTENIDO_RECOMENDADO: ' || SQLERRM);
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT Permisos de ejecución
-PROMPT ============================================================
+-- ============================================================
+-- Permisos de ejecución
+-- ============================================================
 GRANT EXECUTE ON FN_CALCULAR_MONTO TO ROL_ADMIN;
 GRANT EXECUTE ON FN_CALCULAR_MONTO TO ROL_SOPORTE;
 GRANT EXECUTE ON FN_CALCULAR_MONTO TO ROL_ANALISTA;
@@ -139,15 +137,15 @@ GRANT EXECUTE ON FN_CONTENIDO_RECOMENDADO TO ROL_ANALISTA;
 COMMIT;
 
 
-PROMPT ============================================================
-PROMPT Ejemplos de uso (descomentar para ejecutar)
-PROMPT ============================================================
+-- ============================================================
+-- Ejemplos de uso (descomentar para ejecutar)
+-- ============================================================
 /*
 SELECT FN_CALCULAR_MONTO(1) FROM DUAL;
 
 SELECT FN_CONTENIDO_RECOMENDADO(1) FROM DUAL;
 */
 
-PROMPT ============================================================
-PROMPT FIN DEL SCRIPT DE FUNCIONES
-PROMPT ============================================================
+-- ============================================================
+-- FIN DEL SCRIPT DE FUNCIONES
+-- ============================================================

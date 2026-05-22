@@ -1,43 +1,43 @@
-PROMPT ============================================================
-PROMPT QUINDIOFLIX
-PROMPT Autores:
-PROMPT Juan Sebastián Londoño Ramírez
-PROMPT Juan Diego García Nieto
-PROMPT Versión: 1.0
-PROMPT ============================================================
-PROMPT 
-PROMPT ------------------------------------------------------------
-PROMPT ADVERTENCIA: NO ejecutar como SYS / SYSDBA. Si lo haces,
-PROMPT las tablas quedarán en el esquema SYS y los TRIGGERS
-PROMPT fallarán con ORA-04089. Ejecutar como C_QUINDIOFLIX.
-PROMPT ------------------------------------------------------------
+-- ============================================================
+-- QUINDIOFLIX
+-- Autores:
+-- Juan Sebastián Londoño Ramírez
+-- Juan Diego García Nieto
+-- Versión: 1.0
+-- ============================================================
+-- 
+-- ------------------------------------------------------------
+-- ADVERTENCIA: NO ejecutar como SYS / SYSDBA. Si lo haces,
+-- las tablas quedarán en el esquema SYS y los TRIGGERS
+-- fallarán con ORA-04089. Ejecutar como C_QUINDIOFLIX.
+-- ------------------------------------------------------------
 
-PROMPT Orden de creación (respeta dependencias):
-PROMPT 1.  PLAN_SUSCRIPCION
-PROMPT 2.  CIUDAD
-PROMPT 3.  USUARIO          (auto-ref: id_referidor)
-PROMPT 4.  REFERIDO
-PROMPT 5.  PERFIL
-PROMPT 6.  DEPARTAMENTO     (FK a EMPLEADO se agrega después)
-PROMPT 7.  EMPLEADO         (auto-ref: id_supervisor)
-PROMPT 8.  ALTER DEPARTAMENTO ADD CONSTRAINT fk_depto_jefe
-PROMPT 9.  GENERO
-PROMPT 10.  CONTENIDO
-PROMPT 11.  CONTENIDO_GENERO
-PROMPT 12.  CONTENIDO_RELACIONADO  (auto-ref M:N)
-PROMPT 13.  TEMPORADA
-PROMPT 14.  EPISODIO
-PROMPT 15.  REPRODUCCION
-PROMPT 16.  FAVORITO
-PROMPT 17.  CALIFICACION
-PROMPT 18.  REPORTE_CONTENIDO
-PROMPT 19.  PAGO
-PROMPT 20.  RESTRICCION_DOMINIO
-PROMPT 21.  ÍNDICES
+-- Orden de creación (respeta dependencias):
+-- 1.  PLAN_SUSCRIPCION
+-- 2.  CIUDAD
+-- 3.  USUARIO          (auto-ref: id_referidor)
+-- 4.  REFERIDO
+-- 5.  PERFIL
+-- 6.  DEPARTAMENTO     (FK a EMPLEADO se agrega después)
+-- 7.  EMPLEADO         (auto-ref: id_supervisor)
+-- 8.  ALTER DEPARTAMENTO ADD CONSTRAINT fk_depto_jefe
+-- 9.  GENERO
+-- 10.  CONTENIDO
+-- 11.  CONTENIDO_GENERO
+-- 12.  CONTENIDO_RELACIONADO  (auto-ref M:N)
+-- 13.  TEMPORADA
+-- 14.  EPISODIO
+-- 15.  REPRODUCCION
+-- 16.  FAVORITO
+-- 17.  CALIFICACION
+-- 18.  REPORTE_CONTENIDO
+-- 19.  PAGO
+-- 20.  RESTRICCION_DOMINIO
+-- 21.  ÍNDICES
 
-PROMPT ============================================================
-PROMPT 0. LIMPIEZA: Eliminar tablas e índices existentes
-PROMPT ============================================================
+-- ============================================================
+-- 0. LIMPIEZA: Eliminar tablas e índices existentes
+-- ============================================================
 
 BEGIN
    FOR t IN (SELECT table_name FROM user_tables) LOOP
@@ -64,9 +64,9 @@ EXCEPTION WHEN OTHERS THEN NULL;
 END;
 /
 
-PROMPT ============================================================
-PROMPT 1. PLAN_SUSCRIPCION
-PROMPT ============================================================
+-- ============================================================
+-- 1. PLAN_SUSCRIPCION
+-- ============================================================
 CREATE TABLE PLAN_SUSCRIPCION (
     id_plan          NUMBER         GENERATED ALWAYS AS IDENTITY
                                     CONSTRAINT pk_plan PRIMARY KEY,
@@ -82,15 +82,15 @@ CREATE TABLE PLAN_SUSCRIPCION (
     CONSTRAINT chk_plan_precio      CHECK (precio_mensual  > 0)
 );
 
-PROMPT PLAN_SUSCRIPCION: Planes disponibles: Básico, Estándar, Premium.
-PROMPT PLAN_SUSCRIPCION.calidad: Calidad máxima de reproducción: SD | HD | 4K.
-PROMPT PLAN_SUSCRIPCION.max_pantallas: Número máximo de pantallas simultáneas permitidas.
-PROMPT PLAN_SUSCRIPCION.max_perfiles: Número máximo de perfiles permitidos por plan
+-- PLAN_SUSCRIPCION: Planes disponibles: Básico, Estándar, Premium.
+-- PLAN_SUSCRIPCION.calidad: Calidad máxima de reproducción: SD | HD | 4K.
+-- PLAN_SUSCRIPCION.max_pantallas: Número máximo de pantallas simultáneas permitidas.
+-- PLAN_SUSCRIPCION.max_perfiles: Número máximo de perfiles permitidos por plan
 
 
-PROMPT ============================================================
-PROMPT 2. CIUDAD
-PROMPT ============================================================
+-- ============================================================
+-- 2. CIUDAD
+-- ============================================================
 CREATE TABLE CIUDAD (
     id_ciudad    NUMBER         GENERATED ALWAYS AS IDENTITY
                                 CONSTRAINT pk_ciudad PRIMARY KEY,
@@ -98,13 +98,13 @@ CREATE TABLE CIUDAD (
     departamento VARCHAR2(100)
 );
 
-PROMPT CIUDAD: Ciudades de residencia de los usuarios (base para reportes geográficos).
+-- CIUDAD: Ciudades de residencia de los usuarios (base para reportes geográficos).
 
 
-PROMPT ============================================================
-PROMPT 3. USUARIO
-PROMPT Auto-referencia: id_referidor → USUARIO(id_usuario)
-PROMPT ============================================================
+-- ============================================================
+-- 3. USUARIO
+-- Auto-referencia: id_referidor → USUARIO(id_usuario)
+-- ============================================================
 CREATE TABLE USUARIO (
     id_usuario        NUMBER         GENERATED ALWAYS AS IDENTITY
                                      CONSTRAINT pk_usuario PRIMARY KEY,
@@ -125,16 +125,16 @@ CREATE TABLE USUARIO (
     CONSTRAINT fk_usuario_ref      FOREIGN KEY (id_referidor) REFERENCES USUARIO(id_usuario)
 );
 
-PROMPT USUARIO.estado: ACTIVO | INACTIVO | SUSPENDIDO.
-PROMPT COLUMN USUARIO.id_referidor: Usuario que invitó a este usuario a la plataforma.
-PROMPT USUARIO.fecha_vencimiento: Próxima fecha de pago; si se supera +30 días el estado pasa a INACTIVO.
+-- USUARIO.estado: ACTIVO | INACTIVO | SUSPENDIDO.
+-- COLUMN USUARIO.id_referidor: Usuario que invitó a este usuario a la plataforma.
+-- USUARIO.fecha_vencimiento: Próxima fecha de pago; si se supera +30 días el estado pasa a INACTIVO.
 
 
-PROMPT ============================================================
-PROMPT 4. REFERIDO
-PROMPT Registra el par referidor - nuevo y el estado del beneficio.
-PROMPT Un usuario solo puede haber sido referido una vez
-PROMPT ============================================================
+-- ============================================================
+-- 4. REFERIDO
+-- Registra el par referidor - nuevo y el estado del beneficio.
+-- Un usuario solo puede haber sido referido una vez
+-- ============================================================
 CREATE TABLE REFERIDO (
     id_referido                  NUMBER  GENERATED ALWAYS AS IDENTITY
                                          CONSTRAINT pk_referido PRIMARY KEY,
@@ -151,14 +151,14 @@ CREATE TABLE REFERIDO (
     CONSTRAINT fk_ref_nuevo     FOREIGN KEY (id_usuario_nuevo)     REFERENCES USUARIO(id_usuario)
 );
 
-PROMPT REFERIDO: Control de beneficios generados por el programa de referidos.
-PROMPT REFERIDO.beneficio_aplicado_referidor: S = el descuento ya fue aplicado al pago del referidor.
-PROMPT REFERIDO.beneficio_aplicado_nuevo: S = el descuento ya fue aplicado al pago del nuevo usuario.
+-- REFERIDO: Control de beneficios generados por el programa de referidos.
+-- REFERIDO.beneficio_aplicado_referidor: S = el descuento ya fue aplicado al pago del referidor.
+-- REFERIDO.beneficio_aplicado_nuevo: S = el descuento ya fue aplicado al pago del nuevo usuario.
 
 
-PROMPT ============================================================
-PROMPT 5. PERFIL
-PROMPT ============================================================
+-- ============================================================
+-- 5. PERFIL
+-- ============================================================
 CREATE TABLE PERFIL (
     id_perfil  NUMBER         GENERATED ALWAYS AS IDENTITY
                               CONSTRAINT pk_perfil PRIMARY KEY,
@@ -172,12 +172,12 @@ CREATE TABLE PERFIL (
     CONSTRAINT fk_perfil_usuario FOREIGN KEY (id_usuario) REFERENCES USUARIO(id_usuario)
 );
 
-PROMPT PERFIL.tipo: INFANTIL: solo accede a contenido TP, +7, +13 | ADULTO: sin restricción.
+-- PERFIL.tipo: INFANTIL: solo accede a contenido TP, +7, +13 | ADULTO: sin restricción.
 
 
-PROMPT ============================================================
-PROMPT 6. DEPARTAMENTO
-PROMPT ============================================================
+-- ============================================================
+-- 6. DEPARTAMENTO
+-- ============================================================
 CREATE TABLE DEPARTAMENTO (
     id_departamento NUMBER        GENERATED ALWAYS AS IDENTITY
                                   CONSTRAINT pk_departamento PRIMARY KEY,
@@ -186,14 +186,14 @@ CREATE TABLE DEPARTAMENTO (
     id_jefe         NUMBER        -- FK a EMPLEADO; se agrega con ALTER TABLE
 );
 
-PROMPT DEPARTAMENTO: Departamentos: Tecnología, Contenido, Marketing, Soporte, Finanzas, etc.
-PROMPT DEPARTAMENTO.id_jefe: Empleado jefe del departamento (empleado del mismo departamento).
+-- DEPARTAMENTO: Departamentos: Tecnología, Contenido, Marketing, Soporte, Finanzas, etc.
+-- DEPARTAMENTO.id_jefe: Empleado jefe del departamento (empleado del mismo departamento).
 
 
-PROMPT ============================================================
-PROMPT 7. EMPLEADO
-PROMPT Auto-referencia: id_supervisor → EMPLEADO(id_empleado)
-PROMPT ============================================================
+-- ============================================================
+-- 7. EMPLEADO
+-- Auto-referencia: id_supervisor → EMPLEADO(id_empleado)
+-- ============================================================
 CREATE TABLE EMPLEADO (
     id_empleado        NUMBER         GENERATED ALWAYS AS IDENTITY
                                       CONSTRAINT pk_empleado PRIMARY KEY,
@@ -212,21 +212,21 @@ CREATE TABLE EMPLEADO (
     CONSTRAINT fk_emp_supervisor FOREIGN KEY (id_supervisor)   REFERENCES EMPLEADO(id_empleado)
 );
 
-PROMPT EMPLEADO.id_supervisor: Supervisor directo dentro del mismo departamento. NULL = sin supervisor.
-PROMPT EMPLEADO.rol: MODERADOR: empleado de Soporte que revisa reportes de contenido.
+-- EMPLEADO.id_supervisor: Supervisor directo dentro del mismo departamento. NULL = sin supervisor.
+-- EMPLEADO.rol: MODERADOR: empleado de Soporte que revisa reportes de contenido.
 
 
-PROMPT ============================================================
-PROMPT 8. jefe del departamento: para eliminar FK circular:
-PROMPT ============================================================
+-- ============================================================
+-- 8. jefe del departamento: para eliminar FK circular:
+-- ============================================================
 ALTER TABLE DEPARTAMENTO
     ADD CONSTRAINT fk_depto_jefe
     FOREIGN KEY (id_jefe) REFERENCES EMPLEADO(id_empleado);
 
 
-PROMPT ============================================================
-PROMPT 9. GENERO
-PROMPT ============================================================
+-- ============================================================
+-- 9. GENERO
+-- ============================================================
 CREATE TABLE GENERO (
     id_genero NUMBER         GENERATED ALWAYS AS IDENTITY
                              CONSTRAINT pk_genero PRIMARY KEY,
@@ -234,12 +234,12 @@ CREATE TABLE GENERO (
                              CONSTRAINT uq_genero_nombre UNIQUE
 );
 
-PROMPT GENERO: Géneros disponibles: Acción, Comedia, Drama, Suspenso, Romance, Ciencia Ficción, Terror, Documental, Infantil, Musical, etc.
+-- GENERO: Géneros disponibles: Acción, Comedia, Drama, Suspenso, Romance, Ciencia Ficción, Terror, Documental, Infantil, Musical, etc.
 
 
-PROMPT ============================================================
-PROMPT 10. CONTENIDO
-PROMPT ============================================================
+-- ============================================================
+-- 10. CONTENIDO
+-- ============================================================
 CREATE TABLE CONTENIDO (
     id_contenido            NUMBER         GENERATED ALWAYS AS IDENTITY
                                            CONSTRAINT pk_contenido PRIMARY KEY,
@@ -258,15 +258,15 @@ CREATE TABLE CONTENIDO (
     CONSTRAINT fk_cont_empleado  FOREIGN KEY (id_empleado_responsable) REFERENCES EMPLEADO(id_empleado)
 );
 
-PROMPT CONTENIDO.tipo: PELICULA | SERIE | DOCUMENTAL | MUSICA | PODCAST.
-PROMPT CONTENIDO.duracion_minutos: Duración total en minutos. Para SERIE y PODCAST se calcula a partir de los episodios.
-PROMPT CONTENIDO.es_original_quindioflix: S = producción original de QuindioFlix.
-PROMPT CONTENIDO.id_empleado_responsable: Empleado del depto. Contenido que publicó el título en el catálogo.
+-- CONTENIDO.tipo: PELICULA | SERIE | DOCUMENTAL | MUSICA | PODCAST.
+-- CONTENIDO.duracion_minutos: Duración total en minutos. Para SERIE y PODCAST se calcula a partir de los episodios.
+-- CONTENIDO.es_original_quindioflix: S = producción original de QuindioFlix.
+-- CONTENIDO.id_empleado_responsable: Empleado del depto. Contenido que publicó el título en el catálogo.
 
 
-PROMPT ============================================================
-PROMPT 11. CONTENIDO_GENERO  (Detalle)
-PROMPT ============================================================
+-- ============================================================
+-- 11. CONTENIDO_GENERO  (Detalle)
+-- ============================================================
 CREATE TABLE CONTENIDO_GENERO (
     id_contenido NUMBER NOT NULL,
     id_genero    NUMBER NOT NULL,
@@ -275,14 +275,14 @@ CREATE TABLE CONTENIDO_GENERO (
     CONSTRAINT fk_cg_genero    FOREIGN KEY (id_genero)    REFERENCES GENERO(id_genero)
 );
 
-PROMPT CONTENIDO_GENERO: Un contenido puede pertenecer a varios géneros simultáneamente.
+-- CONTENIDO_GENERO: Un contenido puede pertenecer a varios géneros simultáneamente.
 
 
-PROMPT ============================================================
-PROMPT 12. CONTENIDO_RELACIONADO
-PROMPT Auto-referencia M:N: un contenido puede estar relacionado
-PROMPT con otros contenidos (secuela, precuela, remake, spin-off…).
-PROMPT ============================================================
+-- ============================================================
+-- 12. CONTENIDO_RELACIONADO
+-- Auto-referencia M:N: un contenido puede estar relacionado
+-- con otros contenidos (secuela, precuela, remake, spin-off…).
+-- ============================================================
 CREATE TABLE CONTENIDO_RELACIONADO (
     id_contenido_origen  NUMBER        NOT NULL,
     id_contenido_destino NUMBER        NOT NULL,
@@ -295,13 +295,13 @@ CREATE TABLE CONTENIDO_RELACIONADO (
     CONSTRAINT fk_cr_destino FOREIGN KEY (id_contenido_destino) REFERENCES CONTENIDO(id_contenido)
 );
 
-PROMPT CONTENIDO_RELACIONADO: Relaciones entre contenidos: un contenido puede tener secuelas, remakes, spin-offs, etc. La relación es direccional (A es secuela de B).
-PROMPT CONTENIDO_RELACIONADO.tipo_relacion: SECUELA | PRECUELA | REMAKE | SPIN-OFF | VERSION_EXTENDIDA | OTRO.
+-- CONTENIDO_RELACIONADO: Relaciones entre contenidos: un contenido puede tener secuelas, remakes, spin-offs, etc. La relación es direccional (A es secuela de B).
+-- CONTENIDO_RELACIONADO.tipo_relacion: SECUELA | PRECUELA | REMAKE | SPIN-OFF | VERSION_EXTENDIDA | OTRO.
 
 
-PROMPT ============================================================
-PROMPT 13. TEMPORADA  (aplica a SERIE y PODCAST)
-PROMPT ============================================================
+-- ============================================================
+-- 13. TEMPORADA  (aplica a SERIE y PODCAST)
+-- ============================================================
 CREATE TABLE TEMPORADA (
     id_temporada     NUMBER         GENERATED ALWAYS AS IDENTITY
                                     CONSTRAINT pk_temporada PRIMARY KEY,
@@ -314,12 +314,12 @@ CREATE TABLE TEMPORADA (
     CONSTRAINT fk_temp_contenido FOREIGN KEY (id_contenido) REFERENCES CONTENIDO(id_contenido)
 );
 
-PROMPT TEMPORADA: Las SERIES y PODCASTS se organizan en temporadas.
+-- TEMPORADA: Las SERIES y PODCASTS se organizan en temporadas.
 
 
-PROMPT ============================================================
-PROMPT 14. EPISODIO
-PROMPT ============================================================
+-- ============================================================
+-- 14. EPISODIO
+-- ============================================================
 CREATE TABLE EPISODIO (
     id_episodio       NUMBER         GENERATED ALWAYS AS IDENTITY
                                      CONSTRAINT pk_episodio PRIMARY KEY,
@@ -334,14 +334,14 @@ CREATE TABLE EPISODIO (
 );
 
 
-PROMPT ============================================================
-PROMPT 15. REPRODUCCION
-PROMPT Restricción XOR: debe referenciar exactamente uno entre
-PROMPT id_contenido (película/doc/música) e id_episodio (serie/podcast).
-PROMPT Fragmentación por rango de fecha (tablespaces 2024 y 2025).
-PROMPT ============================================================
+-- ============================================================
+-- 15. REPRODUCCION
+-- Restricción XOR: debe referenciar exactamente uno entre
+-- id_contenido (película/doc/música) e id_episodio (serie/podcast).
+-- Fragmentación por rango de fecha (tablespaces 2024 y 2025).
+-- ============================================================
 
-PROMPT Tablespaces para fragmentación de Reproducciones
+-- Tablespaces para fragmentación de Reproducciones
 CREATE TABLESPACE ts_reproducciones_2024
     DATAFILE 'ts_repr_2024.dbf' SIZE 100M AUTOEXTEND ON NEXT 50M MAXSIZE 500M;
 
@@ -381,14 +381,14 @@ PARTITION BY RANGE (fecha_inicio) (
         TABLESPACE ts_reproducciones_2026
 );
 
-PROMPT REPRODUCCION.id_contenido: Referenciado solo para contenido sin episodios (película, documental, música).
-PROMPT REPRODUCCION.id_episodio: Referenciado solo cuando se reproduce un episodio de serie o podcast.
-PROMPT REPRODUCCION.porcentaje_avance: Avance de la reproducción entre 0 y 100. Permite retomar donde se dejó.
+-- REPRODUCCION.id_contenido: Referenciado solo para contenido sin episodios (película, documental, música).
+-- REPRODUCCION.id_episodio: Referenciado solo cuando se reproduce un episodio de serie o podcast.
+-- REPRODUCCION.porcentaje_avance: Avance de la reproducción entre 0 y 100. Permite retomar donde se dejó.
 
 
-PROMPT ============================================================
-PROMPT 16. FAVORITO
-PROMPT ============================================================
+-- ============================================================
+-- 16. FAVORITO
+-- ============================================================
 CREATE TABLE FAVORITO (
     id_perfil      NUMBER NOT NULL,
     id_contenido   NUMBER NOT NULL,
@@ -398,12 +398,12 @@ CREATE TABLE FAVORITO (
     CONSTRAINT fk_fav_contenido FOREIGN KEY (id_contenido) REFERENCES CONTENIDO(id_contenido)
 );
 
-PROMPT FAVORITO: Lista personal de contenidos marcados como favoritos por cada perfil.
+-- FAVORITO: Lista personal de contenidos marcados como favoritos por cada perfil.
 
 
-PROMPT ============================================================
-PROMPT 17. CALIFICACION
-PROMPT ============================================================
+-- ============================================================
+-- 17. CALIFICACION
+-- ============================================================
 CREATE TABLE CALIFICACION (
     id_calificacion    NUMBER    GENERATED ALWAYS AS IDENTITY
                                  CONSTRAINT pk_calificacion PRIMARY KEY,
@@ -418,12 +418,12 @@ CREATE TABLE CALIFICACION (
     CONSTRAINT fk_cal_contenido  FOREIGN KEY (id_contenido) REFERENCES CONTENIDO(id_contenido)
 );
 
-PROMPT CALIFICACION.resena: Reseña escrita opcional que acompaña la calificación por estrellas.
+-- CALIFICACION.resena: Reseña escrita opcional que acompaña la calificación por estrellas.
 
 
-PROMPT ============================================================
-PROMPT 18. REPORTE_CONTENIDO
-PROMPT ============================================================
+-- ============================================================
+-- 18. REPORTE_CONTENIDO
+-- ============================================================
 CREATE TABLE REPORTE_CONTENIDO (
     id_reporte            NUMBER         GENERATED ALWAYS AS IDENTITY
                                          CONSTRAINT pk_reporte PRIMARY KEY,
@@ -442,12 +442,12 @@ CREATE TABLE REPORTE_CONTENIDO (
     CONSTRAINT fk_rep_moderador FOREIGN KEY (id_empleado_moderador) REFERENCES EMPLEADO(id_empleado)
 );
 
-PROMPT REPORTE_CONTENIDO.id_empleado_moderador: Empleado de Soporte (rol MODERADOR) asignado para revisar y resolver el reporte.
+-- REPORTE_CONTENIDO.id_empleado_moderador: Empleado de Soporte (rol MODERADOR) asignado para revisar y resolver el reporte.
 
 
-PROMPT ============================================================
-PROMPT 19. PAGO
-PROMPT ============================================================
+-- ============================================================
+-- 19. PAGO
+-- ============================================================
 CREATE TABLE PAGO (
     id_pago               NUMBER         GENERATED ALWAYS AS IDENTITY
                                          CONSTRAINT pk_pago PRIMARY KEY,
@@ -467,16 +467,16 @@ CREATE TABLE PAGO (
     CONSTRAINT fk_pago_plan    FOREIGN KEY (id_plan)    REFERENCES PLAN_SUSCRIPCION(id_plan)
 );
 
-PROMPT PAGO.id_plan: Plan vigente al momento del pago (puede diferir del plan actual si cambió).
-PROMPT PAGO.descuento_aplicado: Monto descontado por referidos u otras promociones.
-PROMPT PAGO.descripcion_descuento: Justificación del descuento (p.ej. "Descuento por referido #42").
+-- PAGO.id_plan: Plan vigente al momento del pago (puede diferir del plan actual si cambió).
+-- PAGO.descuento_aplicado: Monto descontado por referidos u otras promociones.
+-- PAGO.descripcion_descuento: Justificación del descuento (p.ej. "Descuento por referido #42").
 
 
-PROMPT ============================================================
-PROMPT 20. RESTRICCION_DOMINIO
-PROMPT Tabla dedicada a documentar los valores permitidos
-PROMPT para atributos con restricciones de dominio (CHECK).
-PROMPT ============================================================
+-- ============================================================
+-- 20. RESTRICCION_DOMINIO
+-- Tabla dedicada a documentar los valores permitidos
+-- para atributos con restricciones de dominio (CHECK).
+-- ============================================================
 CREATE TABLE RESTRICCION_DOMINIO (
     id_restriccion  NUMBER         GENERATED ALWAYS AS IDENTITY
                                     CONSTRAINT pk_restriccion_dominio PRIMARY KEY,
@@ -487,8 +487,8 @@ CREATE TABLE RESTRICCION_DOMINIO (
     CONSTRAINT uq_restriccion_dominio UNIQUE (tabla, atributo, valor_permitido)
 );
 
-PROMPT Poblado de RESTRICCION_DOMINIO con todos los valores permitidos
-SET SQLBLANKLINES ON;
+-- Poblado de RESTRICCION_DOMINIO con todos los valores permitidos
+-- SET SQLBLANKLINES ON;
 
 INSERT ALL
     INTO RESTRICCION_DOMINIO (tabla, atributo, valor_permitido, descripcion) VALUES ('PLAN_SUSCRIPCION', 'calidad', 'SD', 'Standard Definition')
@@ -560,63 +560,63 @@ SELECT 1 FROM DUAL;
 COMMIT;
 
 
-PROMPT ============================================================
-PROMPT 21. ÍNDICES  (orientados a las consultas analíticas requeridas)
-PROMPT ============================================================
+-- ============================================================
+-- 21. ÍNDICES  (orientados a las consultas analíticas requeridas)
+-- ============================================================
 
-PROMPT Usuarios
+-- Usuarios
 CREATE BITMAP INDEX idx_usuario_ciudad       ON USUARIO(id_ciudad);
 CREATE BITMAP INDEX idx_usuario_plan         ON USUARIO(id_plan);
 CREATE BITMAP INDEX idx_usuario_estado       ON USUARIO(estado);
 CREATE INDEX idx_usuario_referidor    ON USUARIO(id_referidor);
 
-PROMPT Perfiles
+-- Perfiles
 CREATE INDEX idx_perfil_usuario       ON PERFIL(id_usuario);
 CREATE INDEX idx_perfil_tipo          ON PERFIL(tipo);
 
-PROMPT Contenido
+-- Contenido
 CREATE INDEX idx_cont_tipo            ON CONTENIDO(tipo);
 CREATE INDEX idx_cont_clasificacion   ON CONTENIDO(clasificacion_edad);
 CREATE INDEX idx_cont_fecha_catalogo  ON CONTENIDO(fecha_agregado_catalogo);
 CREATE INDEX idx_cont_empleado        ON CONTENIDO(id_empleado_responsable);
 CREATE INDEX idx_cont_categoria_anio  ON CONTENIDO(tipo, anio_lanzamiento);
 
-PROMPT Reproducción (base de los reportes de consumo)
+-- Reproducción (base de los reportes de consumo)
 CREATE INDEX idx_repr_perfil          ON REPRODUCCION(id_perfil);
 CREATE INDEX idx_repr_contenido       ON REPRODUCCION(id_contenido);
 CREATE INDEX idx_repr_episodio        ON REPRODUCCION(id_episodio);
 CREATE INDEX idx_repr_fecha_inicio    ON REPRODUCCION(fecha_inicio) LOCAL;
 CREATE INDEX idx_repr_dispositivo     ON REPRODUCCION(dispositivo);
 
-PROMPT Índice compuesto: consumo por período (reportes de gerencia)
+-- Índice compuesto: consumo por período (reportes de gerencia)
 CREATE INDEX idx_repr_perfil_fecha    ON REPRODUCCION(id_perfil, fecha_inicio) LOCAL;
 
-PROMPT Pagos (reportes financieros)
+-- Pagos (reportes financieros)
 CREATE INDEX idx_pago_usuario         ON PAGO(id_usuario);
 CREATE INDEX idx_pago_fecha           ON PAGO(fecha_pago);
 CREATE INDEX idx_pago_estado          ON PAGO(estado_pago);
 CREATE INDEX idx_pago_plan            ON PAGO(id_plan);
 
-PROMPT Reportes de contenido inapropiado
+-- Reportes de contenido inapropiado
 CREATE INDEX idx_rep_estado           ON REPORTE_CONTENIDO(estado);
 CREATE INDEX idx_rep_moderador        ON REPORTE_CONTENIDO(id_empleado_moderador);
 CREATE INDEX idx_rep_fecha            ON REPORTE_CONTENIDO(fecha_reporte);
 
-PROMPT Empleados (jerarquía y rendimiento)
+-- Empleados (jerarquía y rendimiento)
 CREATE INDEX idx_emp_departamento     ON EMPLEADO(id_departamento);
 CREATE INDEX idx_emp_supervisor       ON EMPLEADO(id_supervisor);
 CREATE INDEX idx_emp_rol              ON EMPLEADO(rol);
 
-PROMPT Calificaciones
+-- Calificaciones
 CREATE INDEX idx_cal_contenido        ON CALIFICACION(id_contenido);
 
-PROMPT Temporadas / Episodios
+-- Temporadas / Episodios
 CREATE INDEX idx_temp_contenido       ON TEMPORADA(id_contenido);
 CREATE INDEX idx_ep_temporada         ON EPISODIO(id_temporada);
 
-PROMPT Contenido relacionado
+-- Contenido relacionado
 CREATE INDEX idx_cr_destino           ON CONTENIDO_RELACIONADO(id_contenido_destino);
 
-PROMPT ============================================================
-PROMPT FIN DEL SCRIPT DDL
-PROMPT ============================================================
+-- ============================================================
+-- FIN DEL SCRIPT DDL
+-- ============================================================

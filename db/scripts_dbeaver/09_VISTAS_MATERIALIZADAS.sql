@@ -1,24 +1,24 @@
-PROMPT ============================================================
-PROMPT QUINDIOFLIX - VISTAS MATERIALIZADAS
-PROMPT Versión: 1.0
-PROMPT ============================================================
-PROMPT Este script crea las vistas materializadas para reportes
-PROMPT analíticos de la plataforma QuindioFlix:
-PROMPT a) MV_CONTENIDO_POPULAR   – Reproducciones y calificación promedio
-PROMPT por contenido. Base para el reporte "Contenido Mas Popular".
-PROMPT b) MV_INGRESOS_MENSUAL    – Ingresos mensuales por ciudad y plan.
-PROMPT Base para el reporte financiero mensual.
-PROMPT ============================================================
+-- ============================================================
+-- QUINDIOFLIX - VISTAS MATERIALIZADAS
+-- Versión: 1.0
+-- ============================================================
+-- Este script crea las vistas materializadas para reportes
+-- analíticos de la plataforma QuindioFlix:
+-- a) MV_CONTENIDO_POPULAR   – Reproducciones y calificación promedio
+-- por contenido. Base para el reporte "Contenido Mas Popular".
+-- b) MV_INGRESOS_MENSUAL    – Ingresos mensuales por ciudad y plan.
+-- Base para el reporte financiero mensual.
+-- ============================================================
 
-SET SERVEROUTPUT ON;
+-- SET SERVEROUTPUT ON;
 
-PROMPT ============================================================
-PROMPT a) MV_CONTENIDO_POPULAR
-PROMPT Pre-calcula el número total de reproducciones y la
-PROMPT calificación promedio para cada pieza de contenido.
-PROMPT Soporta contenido directo (película/documental/música)
-PROMPT y contenido por episodios (serie/podcast).
-PROMPT ============================================================
+-- ============================================================
+-- a) MV_CONTENIDO_POPULAR
+-- Pre-calcula el número total de reproducciones y la
+-- calificación promedio para cada pieza de contenido.
+-- Soporta contenido directo (película/documental/música)
+-- y contenido por episodios (serie/podcast).
+-- ============================================================
 CREATE MATERIALIZED VIEW MV_CONTENIDO_POPULAR
 BUILD IMMEDIATE
 REFRESH COMPLETE ON DEMAND
@@ -56,11 +56,11 @@ COMMENT ON MATERIALIZED VIEW MV_CONTENIDO_POPULAR IS
 'Pre-calcula el numero total de reproducciones y la calificacion promedio por contenido. Base para el reporte "Contenido Mas Popular".';
 
 
-PROMPT ============================================================
-PROMPT b) MV_INGRESOS_MENSUAL
-PROMPT Pre-calcula los ingresos mensuales agrupados por ciudad
-PROMPT y plan de suscripción. Solo considera pagos exitosos.
-PROMPT ============================================================
+-- ============================================================
+-- b) MV_INGRESOS_MENSUAL
+-- Pre-calcula los ingresos mensuales agrupados por ciudad
+-- y plan de suscripción. Solo considera pagos exitosos.
+-- ============================================================
 CREATE MATERIALIZED VIEW MV_INGRESOS_MENSUAL
 BUILD IMMEDIATE
 REFRESH COMPLETE ON DEMAND
@@ -88,24 +88,24 @@ COMMENT ON MATERIALIZED VIEW MV_INGRESOS_MENSUAL IS
 'Pre-calcula los ingresos mensuales por ciudad y plan de suscripcion. Base para el reporte financiero mensual.';
 
 
-PROMPT ============================================================
-PROMPT ÍNDICES sobre las vistas materializadas (reportes analíticos)
-PROMPT ============================================================
+-- ============================================================
+-- ÍNDICES sobre las vistas materializadas (reportes analíticos)
+-- ============================================================
 
-PROMPT Índices para MV_CONTENIDO_POPULAR
+-- Índices para MV_CONTENIDO_POPULAR
 CREATE INDEX idx_mv_popular_reproducciones ON MV_CONTENIDO_POPULAR(total_reproducciones DESC);
 CREATE INDEX idx_mv_popular_calificacion   ON MV_CONTENIDO_POPULAR(promedio_calificacion DESC);
 CREATE INDEX idx_mv_popular_contenido    ON MV_CONTENIDO_POPULAR(id_contenido);
 
-PROMPT Índices para MV_INGRESOS_MENSUAL
+-- Índices para MV_INGRESOS_MENSUAL
 CREATE INDEX idx_mv_ingresos_mes    ON MV_INGRESOS_MENSUAL(mes);
 CREATE INDEX idx_mv_ingresos_ciudad ON MV_INGRESOS_MENSUAL(id_ciudad);
 CREATE INDEX idx_mv_ingresos_plan   ON MV_INGRESOS_MENSUAL(id_plan);
 
 
-PROMPT ============================================================
-PROMPT Permisos de lectura para los roles de reportes
-PROMPT ============================================================
+-- ============================================================
+-- Permisos de lectura para los roles de reportes
+-- ============================================================
 GRANT SELECT ON MV_CONTENIDO_POPULAR TO ROL_ANALISTA;
 GRANT SELECT ON MV_CONTENIDO_POPULAR TO ROL_ADMIN;
 
@@ -113,14 +113,14 @@ GRANT SELECT ON MV_INGRESOS_MENSUAL  TO ROL_ANALISTA;
 GRANT SELECT ON MV_INGRESOS_MENSUAL  TO ROL_ADMIN;
 
 
-PROMPT ============================================================
-PROMPT c) SP_REFRESH_MV_REPORTES
-PROMPT Refresca ambas vistas materializadas y reporta el estado.
-PROMPT OUT params para backend:
-PROMPT - p_contenido_ok   : 'S' si MV_CONTENIDO_POPULAR se refresco
-PROMPT - p_ingresos_ok    : 'S' si MV_INGRESOS_MENSUAL se refresco
-PROMPT - p_mensaje        : mensaje resumen
-PROMPT ============================================================
+-- ============================================================
+-- c) SP_REFRESH_MV_REPORTES
+-- Refresca ambas vistas materializadas y reporta el estado.
+-- OUT params para backend:
+-- - p_contenido_ok   : 'S' si MV_CONTENIDO_POPULAR se refresco
+-- - p_ingresos_ok    : 'S' si MV_INGRESOS_MENSUAL se refresco
+-- - p_mensaje        : mensaje resumen
+-- ============================================================
 CREATE OR REPLACE PROCEDURE SP_REFRESH_MV_REPORTES (
     p_contenido_ok OUT CHAR,
     p_ingresos_ok  OUT CHAR,
@@ -147,7 +147,6 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE(p_mensaje);
         RAISE_APPLICATION_ERROR(-20090, p_mensaje);
 END;
-/
 
 GRANT EXECUTE ON SP_REFRESH_MV_REPORTES TO ROL_ADMIN;
 GRANT EXECUTE ON SP_REFRESH_MV_REPORTES TO ROL_ANALISTA;
@@ -156,6 +155,6 @@ GRANT EXECUTE ON SP_REFRESH_MV_REPORTES TO ROL_ANALISTA;
 COMMIT;
 
 
-PROMPT ============================================================
-PROMPT FIN DEL SCRIPT DE VISTAS MATERIALIZADAS
-PROMPT ============================================================
+-- ============================================================
+-- FIN DEL SCRIPT DE VISTAS MATERIALIZADAS
+-- ============================================================

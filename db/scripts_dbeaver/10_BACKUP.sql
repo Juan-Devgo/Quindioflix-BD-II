@@ -1,48 +1,48 @@
-PROMPT ============================================================
-PROMPT QUINDIOFLIX - PROCEDIMIENTO DE RESPALDO (BACKUP) SOLO DBA
-PROMPT Versión: 1.0
-PROMPT ============================================================
-PROMPT Este script crea el procedimiento SP_BACKUP_QUINDIOFLIX,
-PROMPT que permite realizar respaldos lógicos del esquema
-PROMPT C_QUINDIOFLIX mediante Oracle Data Pump (DBMS_DATAPUMP).
-PROMPT 
-PROMPT Requisitos:
-PROMPT · Ejecutar con cuenta DBA / SYSDBA.
-PROMPT · Tener creado el DIRECTORY de Oracle apuntando al
-PROMPT directorio físico de respaldos.
-PROMPT · Poseer el rol DATAPUMP_EXP_FULL_DATABASE.
-PROMPT 
-PROMPT Secciones:
-PROMPT 1. Tabla de auditoría (BACKUP_LOG)
-PROMPT 2. Función de validación de privilegios DBA
-PROMPT 3. Procedimiento principal de backup
-PROMPT 4. Procedimiento de consulta de backups realizados
-PROMPT 5. Permisos de ejecución (solo DBA)
-PROMPT ============================================================
+-- ============================================================
+-- QUINDIOFLIX - PROCEDIMIENTO DE RESPALDO (BACKUP) SOLO DBA
+-- Versión: 1.0
+-- ============================================================
+-- Este script crea el procedimiento SP_BACKUP_QUINDIOFLIX,
+-- que permite realizar respaldos lógicos del esquema
+-- C_QUINDIOFLIX mediante Oracle Data Pump (DBMS_DATAPUMP).
+-- 
+-- Requisitos:
+-- · Ejecutar con cuenta DBA / SYSDBA.
+-- · Tener creado el DIRECTORY de Oracle apuntando al
+-- directorio físico de respaldos.
+-- · Poseer el rol DATAPUMP_EXP_FULL_DATABASE.
+-- 
+-- Secciones:
+-- 1. Tabla de auditoría (BACKUP_LOG)
+-- 2. Función de validación de privilegios DBA
+-- 3. Procedimiento principal de backup
+-- 4. Procedimiento de consulta de backups realizados
+-- 5. Permisos de ejecución (solo DBA)
+-- ============================================================
 
-SET SERVEROUTPUT ON;
-SET LINESIZE 200;
-SET PAGESIZE 100;
-COLUMN backup_id         FORMAT 999,999
-COLUMN tipo_backup       FORMAT A15
-COLUMN nombre_job        FORMAT A30
-COLUMN archivo_dump      FORMAT A40
-COLUMN directorio        FORMAT A30
-COLUMN fecha_inicio      FORMAT A20
-COLUMN fecha_fin         FORMAT A20
-COLUMN duracion_seg      FORMAT 999,999.99
-COLUMN estado            FORMAT A15
-COLUMN bytes_generados   FORMAT 999,999,999
-COLUMN mensaje           FORMAT A80 WRAP
-COLUMN ejecutado_por     FORMAT A25
+-- SET SERVEROUTPUT ON;
+-- SET LINESIZE 200;
+-- SET PAGESIZE 100;
+-- COLUMN backup_id         FORMAT 999,999
+-- COLUMN tipo_backup       FORMAT A15
+-- COLUMN nombre_job        FORMAT A30
+-- COLUMN archivo_dump      FORMAT A40
+-- COLUMN directorio        FORMAT A30
+-- COLUMN fecha_inicio      FORMAT A20
+-- COLUMN fecha_fin         FORMAT A20
+-- COLUMN duracion_seg      FORMAT 999,999.99
+-- COLUMN estado            FORMAT A15
+-- COLUMN bytes_generados   FORMAT 999,999,999
+-- COLUMN mensaje           FORMAT A80 WRAP
+-- COLUMN ejecutado_por     FORMAT A25
 
-PROMPT ============================================================
-PROMPT QUINDIOFLIX - CONFIGURACIÓN DE RESPALDO DBA
-PROMPT Ejecutar únicamente con cuenta DBA / SYSDBA
-PROMPT ============================================================
-PROMPT 0. CREAR DIRECTORY DE RESPALDO (si no existe)
-PROMPT Ajuste '/opt/oracle/backups/quindioflix' según su servidor.
-PROMPT ============================================================
+-- ============================================================
+-- QUINDIOFLIX - CONFIGURACIÓN DE RESPALDO DBA
+-- Ejecutar únicamente con cuenta DBA / SYSDBA
+-- ============================================================
+-- 0. CREAR DIRECTORY DE RESPALDO (si no existe)
+-- Ajuste '/opt/oracle/backups/quindioflix' según su servidor.
+-- ============================================================
 
 BEGIN
     EXECUTE IMMEDIATE
@@ -57,12 +57,11 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE('Error al crear DIRECTORY o asignar permisos: ' || SQLERRM);
         DBMS_OUTPUT.PUT_LINE('Asegúrese de que el directorio físico exista y tenga permisos.');
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT 1. TABLA DE AUDITORÍA DE BACKUPS
-PROMPT ============================================================
+-- ============================================================
+-- 1. TABLA DE AUDITORÍA DE BACKUPS
+-- ============================================================
 
 BEGIN
     EXECUTE IMMEDIATE
@@ -90,12 +89,11 @@ EXCEPTION
             RAISE;
         END IF;
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT 2. FUNCIÓN AUXILIAR: VALIDAR PRIVILEGIOS DBA
-PROMPT ============================================================
+-- ============================================================
+-- 2. FUNCIÓN AUXILIAR: VALIDAR PRIVILEGIOS DBA
+-- ============================================================
 
 CREATE OR REPLACE FUNCTION FN_ES_DBA RETURN NUMBER IS
     v_count NUMBER;
@@ -112,20 +110,19 @@ BEGIN
         RETURN 0;
     END IF;
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT 3. PROCEDIMIENTO PRINCIPAL: SP_BACKUP_QUINDIOFLIX
-PROMPT Realiza un respaldo lógico (Data Pump) del esquema
-PROMPT C_QUINDIOFLIX.  Solo ejecutable por usuarios DBA.
-PROMPT 
-PROMPT Parámetros:
-PROMPT p_tipo_backup  : 'FULL' | 'SCHEMA' | 'TABLA'
-PROMPT p_nombre_job   : nombre identificador del job Data Pump
-PROMPT p_archivo      : nombre base del archivo .dmp (sin extensión)
-PROMPT p_incluir_estadisticas : 'Y' para incluir ESTIMATE=STATISTICS
-PROMPT ============================================================
+-- ============================================================
+-- 3. PROCEDIMIENTO PRINCIPAL: SP_BACKUP_QUINDIOFLIX
+-- Realiza un respaldo lógico (Data Pump) del esquema
+-- C_QUINDIOFLIX.  Solo ejecutable por usuarios DBA.
+-- 
+-- Parámetros:
+-- p_tipo_backup  : 'FULL' | 'SCHEMA' | 'TABLA'
+-- p_nombre_job   : nombre identificador del job Data Pump
+-- p_archivo      : nombre base del archivo .dmp (sin extensión)
+-- p_incluir_estadisticas : 'Y' para incluir ESTIMATE=STATISTICS
+-- ============================================================
 
 CREATE OR REPLACE PROCEDURE SP_BACKUP_QUINDIOFLIX (
     p_tipo_backup          IN VARCHAR2 DEFAULT 'SCHEMA',
@@ -364,14 +361,13 @@ EXCEPTION
             'Error durante el backup Data Pump: ' || SQLERRM
         );
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT 4. PROCEDIMIENTO DE CONSULTA: SP_LISTAR_BACKUPS
-PROMPT Permite consultar el historial de backups realizados.
-PROMPT Solo ejecutable por DBA.
-PROMPT ============================================================
+-- ============================================================
+-- 4. PROCEDIMIENTO DE CONSULTA: SP_LISTAR_BACKUPS
+-- Permite consultar el historial de backups realizados.
+-- Solo ejecutable por DBA.
+-- ============================================================
 
 CREATE OR REPLACE PROCEDURE SP_LISTAR_BACKUPS (
     p_dias    IN  NUMBER   DEFAULT 30,
@@ -466,12 +462,11 @@ EXCEPTION
             p_mensaje
         );
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT 5. PERMISOS DE EJECUCIÓN (SOLO DBA / ADMIN)
-PROMPT ============================================================
+-- ============================================================
+-- 5. PERMISOS DE EJECUCIÓN (SOLO DBA / ADMIN)
+-- ============================================================
 
 GRANT EXECUTE ON FN_ES_DBA TO ROL_ADMIN;
 
@@ -481,7 +476,7 @@ GRANT EXECUTE ON SP_BACKUP_QUINDIOFLIX TO ADMIN_QUINDIO;
 GRANT EXECUTE ON SP_LISTAR_BACKUPS TO ROL_ADMIN;
 GRANT EXECUTE ON SP_LISTAR_BACKUPS TO ADMIN_QUINDIO;
 
-PROMPT Revocar posibles permisos previos de otros roles/usuarios
+-- Revocar posibles permisos previos de otros roles/usuarios
 BEGIN
     FOR r IN (
         SELECT grantee
@@ -495,13 +490,12 @@ BEGIN
 EXCEPTION
     WHEN OTHERS THEN NULL;
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT 6. SINONIMO PUBLICO (opcional, para acceso DBA directo)
-PROMPT Requiere privilegio CREATE PUBLIC SYNONYM.
-PROMPT ============================================================
+-- ============================================================
+-- 6. SINONIMO PUBLICO (opcional, para acceso DBA directo)
+-- Requiere privilegio CREATE PUBLIC SYNONYM.
+-- ============================================================
 
 BEGIN
     EXECUTE IMMEDIATE 'CREATE OR REPLACE PUBLIC SYNONYM SP_BACKUP_QUINDIOFLIX FOR C_QUINDIOFLIX.SP_BACKUP_QUINDIOFLIX';
@@ -510,20 +504,19 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN
     DBMS_OUTPUT.PUT_LINE('Error creando sinonimos publicos (requiere privilegio CREATE PUBLIC SYNONYM): ' || SQLERRM);
 END;
-/
 
 
 COMMIT;
 
 
-PROMPT ============================================================
-PROMPT 7. EJEMPLOS DE USO (descomentar para ejecutar)
-PROMPT ============================================================
+-- ============================================================
+-- 7. EJEMPLOS DE USO (descomentar para ejecutar)
+-- ============================================================
 /*
-PROMPT
-PROMPT --- Ejecutando backup de ejemplo ---
+--
+-- --- Ejecutando backup de ejemplo ---
 
-PROMPT Backup completo del esquema (por defecto)
+-- Backup completo del esquema (por defecto)
 DECLARE
     v_id     NUMBER;
     v_estado VARCHAR2(30);
@@ -536,9 +529,8 @@ BEGIN
     );
     DBMS_OUTPUT.PUT_LINE('ID: ' || v_id || ' | Estado: ' || v_estado || ' | ' || v_msg);
 END;
-/
 
-PROMPT Backup explicito de tipo SCHEMA
+-- Backup explicito de tipo SCHEMA
 DECLARE
     v_id     NUMBER;
     v_estado VARCHAR2(30);
@@ -554,9 +546,8 @@ BEGIN
     );
     DBMS_OUTPUT.PUT_LINE('ID: ' || v_id || ' | Estado: ' || v_estado || ' | ' || v_msg);
 END;
-/
 
-PROMPT Listar backups de los ultimos 7 dias
+-- Listar backups de los ultimos 7 dias
 DECLARE
     v_cursor SYS_REFCURSOR;
     v_total  NUMBER;
@@ -570,12 +561,11 @@ BEGIN
     );
     DBMS_OUTPUT.PUT_LINE(v_msg);
 END;
-/
 
-PROMPT Consultar la tabla de auditoria directamente
+-- Consultar la tabla de auditoria directamente
 SELECT * FROM BACKUP_LOG ORDER BY fecha_inicio DESC;
 */
 
-PROMPT ============================================================
-PROMPT FIN DEL SCRIPT DE BACKUP
-PROMPT ============================================================
+-- ============================================================
+-- FIN DEL SCRIPT DE BACKUP
+-- ============================================================

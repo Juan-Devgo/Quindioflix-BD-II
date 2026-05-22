@@ -1,22 +1,22 @@
-PROMPT ============================================================
-PROMPT QUINDIOFLIX - TRIGGERS
-PROMPT Versión: 1.0
-PROMPT ============================================================
-PROMPT Este script crea los triggers de negocio solicitados:
-PROMPT a) REPRODUCCION  - Verificar cuenta activa antes de insertar.
-PROMPT b) PERFIL        - Verificar límite de perfiles según plan.
-PROMPT c) CALIFICACION  - Verificar >= 50% reproducción antes de calificar.
-PROMPT d) PAGO          - Actualizar estado y fecha de último pago (compound).
-PROMPT 
-PROMPT Se agrega la columna fecha_ultimo_pago a USUARIO para el trigger (d).
-PROMPT Se ajusta SP_RENOVAR_SUSCRIPCIONES para no duplicar la lógica del trigger (d).
-PROMPT ============================================================
+-- ============================================================
+-- QUINDIOFLIX - TRIGGERS
+-- Versión: 1.0
+-- ============================================================
+-- Este script crea los triggers de negocio solicitados:
+-- a) REPRODUCCION  - Verificar cuenta activa antes de insertar.
+-- b) PERFIL        - Verificar límite de perfiles según plan.
+-- c) CALIFICACION  - Verificar >= 50% reproducción antes de calificar.
+-- d) PAGO          - Actualizar estado y fecha de último pago (compound).
+-- 
+-- Se agrega la columna fecha_ultimo_pago a USUARIO para el trigger (d).
+-- Se ajusta SP_RENOVAR_SUSCRIPCIONES para no duplicar la lógica del trigger (d).
+-- ============================================================
 
-SET SERVEROUTPUT ON;
+-- SET SERVEROUTPUT ON;
 
-PROMPT ============================================================
-PROMPT 0. Verificación: no ejecutar como SYS (evita ORA-04089)
-PROMPT ============================================================
+-- ============================================================
+-- 0. Verificación: no ejecutar como SYS (evita ORA-04089)
+-- ============================================================
 DECLARE
     v_user VARCHAR2(30);
 BEGIN
@@ -30,12 +30,11 @@ BEGIN
         );
     END IF;
 END;
-/
 
-PROMPT ============================================================
-PROMPT 0. Preparación: agregar columna fecha_ultimo_pago a USUARIO
-PROMPT (si no existe, para soportar el trigger de pagos)
-PROMPT ============================================================
+-- ============================================================
+-- 0. Preparación: agregar columna fecha_ultimo_pago a USUARIO
+-- (si no existe, para soportar el trigger de pagos)
+-- ============================================================
 BEGIN
     EXECUTE IMMEDIATE 'ALTER TABLE USUARIO ADD fecha_ultimo_pago DATE';
     DBMS_OUTPUT.PUT_LINE('Columna fecha_ultimo_pago agregada a USUARIO.');
@@ -43,15 +42,14 @@ EXCEPTION
     WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('Nota: ' || SQLERRM);
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT a) TRIGGER: TRG_VERIFICAR_USUARIO_ACTIVO_REPRODUCCION
-PROMPT Nivel de fila (BEFORE INSERT).
-PROMPT Verifica que el perfil que intenta reproducir pertenezca a
-PROMPT un usuario con estado = 'ACTIVO'. Si no, rechaza la inserción.
-PROMPT ============================================================
+-- ============================================================
+-- a) TRIGGER: TRG_VERIFICAR_USUARIO_ACTIVO_REPRODUCCION
+-- Nivel de fila (BEFORE INSERT).
+-- Verifica que el perfil que intenta reproducir pertenezca a
+-- un usuario con estado = 'ACTIVO'. Si no, rechaza la inserción.
+-- ============================================================
 CREATE OR REPLACE TRIGGER TRG_VERIFICAR_USUARIO_ACTIVO_REPRODUCCION
 BEFORE INSERT ON REPRODUCCION
 FOR EACH ROW
@@ -73,20 +71,19 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('TRG_VERIFICAR_USUARIO_ACTIVO_REPRODUCCION - Perfil: ' || :NEW.id_perfil || ' | Estado usuario: ACTIVO');
     END IF;
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT b) TRIGGER: TRG_VERIFICAR_MAX_PERFILES
-PROMPT COMPOUND TRIGGER (BEFORE EACH ROW + AFTER STATEMENT).
-PROMPT Verifica que el usuario no exceda el máximo de perfiles
-PROMPT permitidos por su plan (Basic: 2, Standard: 3, Premium: 5).
-PROMPT Se consulta PLAN_SUSCRIPCION.max_perfiles para respetar el
-PROMPT esquema existente (los valores allí deben coincidir).
-PROMPT 
-PROMPT Se utiliza COMPOUND TRIGGER para evitar ORA-04091 (mutating
-PROMPT table) al consultar PERFIL desde un trigger de fila.
-PROMPT ============================================================
+-- ============================================================
+-- b) TRIGGER: TRG_VERIFICAR_MAX_PERFILES
+-- COMPOUND TRIGGER (BEFORE EACH ROW + AFTER STATEMENT).
+-- Verifica que el usuario no exceda el máximo de perfiles
+-- permitidos por su plan (Basic: 2, Standard: 3, Premium: 5).
+-- Se consulta PLAN_SUSCRIPCION.max_perfiles para respetar el
+-- esquema existente (los valores allí deben coincidir).
+-- 
+-- Se utiliza COMPOUND TRIGGER para evitar ORA-04091 (mutating
+-- table) al consultar PERFIL desde un trigger de fila.
+-- ============================================================
 CREATE OR REPLACE TRIGGER TRG_VERIFICAR_MAX_PERFILES
 FOR INSERT ON PERFIL
 COMPOUND TRIGGER
@@ -141,17 +138,16 @@ COMPOUND TRIGGER
     END AFTER STATEMENT;
 
 END TRG_VERIFICAR_MAX_PERFILES;
-/
 
 
-PROMPT ============================================================
-PROMPT c) TRIGGER: TRG_VERIFICAR_REPRODUCCION_CALIFICACION
-PROMPT Nivel de fila (BEFORE INSERT).
-PROMPT Verifica que el perfil haya reproducido al menos el 50% del
-PROMPT contenido antes de permitir la calificación.
-PROMPT Soporta contenido directo (película/documental/música) y
-PROMPT contenido por episodios (serie/podcast).
-PROMPT ============================================================
+-- ============================================================
+-- c) TRIGGER: TRG_VERIFICAR_REPRODUCCION_CALIFICACION
+-- Nivel de fila (BEFORE INSERT).
+-- Verifica que el perfil haya reproducido al menos el 50% del
+-- contenido antes de permitir la calificación.
+-- Soporta contenido directo (película/documental/música) y
+-- contenido por episodios (serie/podcast).
+-- ============================================================
 CREATE OR REPLACE TRIGGER TRG_VERIFICAR_REPRODUCCION_CALIFICACION
 BEFORE INSERT ON CALIFICACION
 FOR EACH ROW
@@ -182,24 +178,23 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('TRG_VERIFICAR_REPRODUCCION_CALIFICACION - Perfil: ' || :NEW.id_perfil || ' | Reproducciones >= 50%: ' || v_count || ' OK');
     END IF;
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT d) TRIGGER: TRG_ACTUALIZAR_USUARIO_PAGO
-PROMPT Nivel de sentencia compuesto (COMPOUND TRIGGER).
-PROMPT AFTER STATEMENT sobre INSERT en PAGO.
-PROMPT 
-PROMPT Cuando se inserta un pago exitoso, actualiza automáticamente:
-PROMPT - USUARIO.estado           -> 'ACTIVO'
-PROMPT - USUARIO.fecha_ultimo_pago -> SYSDATE
-PROMPT 
-PROMPT Se utiliza un COMPOUND TRIGGER porque un trigger puramente
-PROMPT de sentencia en Oracle no puede acceder a :NEW.id_usuario.
-PROMPT La sección BEFORE EACH ROW acumula los IDs de usuario cuyo
-PROMPT pago fue exitoso, y la sección AFTER STATEMENT procesa la
-PROMPT actualización masiva una sola vez por sentencia.
-PROMPT ============================================================
+-- ============================================================
+-- d) TRIGGER: TRG_ACTUALIZAR_USUARIO_PAGO
+-- Nivel de sentencia compuesto (COMPOUND TRIGGER).
+-- AFTER STATEMENT sobre INSERT en PAGO.
+-- 
+-- Cuando se inserta un pago exitoso, actualiza automáticamente:
+-- - USUARIO.estado           -> 'ACTIVO'
+-- - USUARIO.fecha_ultimo_pago -> SYSDATE
+-- 
+-- Se utiliza un COMPOUND TRIGGER porque un trigger puramente
+-- de sentencia en Oracle no puede acceder a :NEW.id_usuario.
+-- La sección BEFORE EACH ROW acumula los IDs de usuario cuyo
+-- pago fue exitoso, y la sección AFTER STATEMENT procesa la
+-- actualización masiva una sola vez por sentencia.
+-- ============================================================
 CREATE OR REPLACE TRIGGER TRG_ACTUALIZAR_USUARIO_PAGO
 FOR INSERT ON PAGO
 COMPOUND TRIGGER
@@ -227,17 +222,16 @@ COMPOUND TRIGGER
     END AFTER STATEMENT;
 
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT 4. Permisos de ejecución (si se necesitan para triggers, aunque
-PROMPT normalmente los triggers se ejecutan con los permisos del
-PROMPT propietario del esquema)
-PROMPT ============================================================
+-- ============================================================
+-- 4. Permisos de ejecución (si se necesitan para triggers, aunque
+-- normalmente los triggers se ejecutan con los permisos del
+-- propietario del esquema)
+-- ============================================================
 
 COMMIT;
 
-PROMPT ============================================================
-PROMPT FIN DEL SCRIPT DE TRIGGERS
-PROMPT ============================================================
+-- ============================================================
+-- FIN DEL SCRIPT DE TRIGGERS
+-- ============================================================

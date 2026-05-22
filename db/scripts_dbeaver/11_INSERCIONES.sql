@@ -1,21 +1,20 @@
-PROMPT ============================================================
-PROMPT QUINDIOFLIX
-PROMPT Script: 10_INSERCIONES.sql
-PROMPT Descripción: Inserción masiva de datos para reportes analíticos
-PROMPT Orden: respeta dependencias de claves foráneas
-PROMPT ============================================================
+-- ============================================================
+-- QUINDIOFLIX
+-- Script: 10_INSERCIONES.sql
+-- Descripción: Inserción masiva de datos para reportes analíticos
+-- Orden: respeta dependencias de claves foráneas
+-- ============================================================
 
-SET DEFINE OFF;
-SET SERVEROUTPUT ON;
+-- SET DEFINE OFF;
+-- SET SERVEROUTPUT ON;
 
 BEGIN
     DBMS_OUTPUT.PUT_LINE('Iniciando inserción de datos QuindioFlix...');
 END;
-/
 
-PROMPT ============================================================
-PROMPT BLOQUE 1: Planes, Ciudades, Géneros, Departamentos
-PROMPT ============================================================
+-- ============================================================
+-- BLOQUE 1: Planes, Ciudades, Géneros, Departamentos
+-- ============================================================
 DECLARE
     -- Planes
     v_plan_basico   NUMBER;
@@ -664,13 +663,12 @@ BEGIN
 
     DBMS_OUTPUT.PUT_LINE('=== Inserción de datos completada exitosamente ===');
 END;
-/
 
 COMMIT;
 
-PROMPT ============================================================
-PROMPT VERIFICACIÓN DE CONTEOS
-PROMPT ============================================================
+-- ============================================================
+-- VERIFICACIÓN DE CONTEOS
+-- ============================================================
 SELECT 'PLAN_SUSCRIPCION' AS tabla, COUNT(*) AS registros FROM PLAN_SUSCRIPCION
 UNION ALL
 SELECT 'CIUDAD', COUNT(*) FROM CIUDAD

@@ -1,20 +1,20 @@
-PROMPT ============================================================
-PROMPT QUINDIOFLIX - PROCEDIMIENTOS CON CURSORES
-PROMPT Versión: 1.0
-PROMPT ============================================================
-PROMPT Procedimientos basados en cursores:
-PROMPT a) SP_REPORTE_MOROSIDAD      – escanea usuarios con suscripción
-PROMPT vencida (+30 días sin pago) y genera reporte detallado.
-PROMPT b) SP_ACTUALIZAR_POPULARIDAD – escanea el catálogo y actualiza
-PROMPT la popularidad de cada contenido según vistas completas.
-PROMPT ============================================================
+-- ============================================================
+-- QUINDIOFLIX - PROCEDIMIENTOS CON CURSORES
+-- Versión: 1.0
+-- ============================================================
+-- Procedimientos basados en cursores:
+-- a) SP_REPORTE_MOROSIDAD      – escanea usuarios con suscripción
+-- vencida (+30 días sin pago) y genera reporte detallado.
+-- b) SP_ACTUALIZAR_POPULARIDAD – escanea el catálogo y actualiza
+-- la popularidad de cada contenido según vistas completas.
+-- ============================================================
 
-SET SERVEROUTPUT ON;
+-- SET SERVEROUTPUT ON;
 
-PROMPT ============================================================
-PROMPT 0. Preparación: agregar columna popularidad a CONTENIDO
-PROMPT (si no existe, para soportar el procedimiento de popularidad)
-PROMPT ============================================================
+-- ============================================================
+-- 0. Preparación: agregar columna popularidad a CONTENIDO
+-- (si no existe, para soportar el procedimiento de popularidad)
+-- ============================================================
 BEGIN
     EXECUTE IMMEDIATE 'ALTER TABLE CONTENIDO ADD popularidad NUMBER DEFAULT 0';
     DBMS_OUTPUT.PUT_LINE('Columna popularidad agregada a CONTENIDO.');
@@ -22,29 +22,28 @@ EXCEPTION
     WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('Nota: ' || SQLERRM);
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT a) SP_REPORTE_MOROSIDAD
-PROMPT Cursor explicito que recorre los usuarios cuya suscripcion
-PROMPT lleva mas de 30 dias vencida y no tienen un pago exitoso
-PROMPT posterior a la fecha de vencimiento.
-PROMPT
-PROMPT OUT params para backend:
-PROMPT - p_reporte        : SYS_REFCURSOR con los datos del reporte
-PROMPT - p_total_morosos: total de usuarios morosos
-PROMPT - p_monto_total  : monto total adeudado
-PROMPT - p_mensaje      : mensaje resumen
-PROMPT
-PROMPT Genera un reporte por consola con:
-PROMPT - nombre del usuario
-PROMPT - correo electronico
-PROMPT - plan contratado
-PROMPT - dias de mora (dias transcurridos desde la fecha de vencimiento)
-PROMPT - monto adeudado (precio mensual del plan multiplicado por
-PROMPT los meses vencidos completos)
-PROMPT ============================================================
+-- ============================================================
+-- a) SP_REPORTE_MOROSIDAD
+-- Cursor explicito que recorre los usuarios cuya suscripcion
+-- lleva mas de 30 dias vencida y no tienen un pago exitoso
+-- posterior a la fecha de vencimiento.
+--
+-- OUT params para backend:
+-- - p_reporte        : SYS_REFCURSOR con los datos del reporte
+-- - p_total_morosos: total de usuarios morosos
+-- - p_monto_total  : monto total adeudado
+-- - p_mensaje      : mensaje resumen
+--
+-- Genera un reporte por consola con:
+-- - nombre del usuario
+-- - correo electronico
+-- - plan contratado
+-- - dias de mora (dias transcurridos desde la fecha de vencimiento)
+-- - monto adeudado (precio mensual del plan multiplicado por
+-- los meses vencidos completos)
+-- ============================================================
 CREATE OR REPLACE PROCEDURE SP_REPORTE_MOROSIDAD (
     p_reporte       OUT SYS_REFCURSOR,
     p_total_morosos OUT NUMBER,
@@ -150,29 +149,28 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE(p_mensaje);
         RAISE_APPLICATION_ERROR(-20060, 'Error al generar reporte de morosidad: ' || SQLERRM);
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT b) SP_ACTUALIZAR_POPULARIDAD
-PROMPT Cursor explicito que recorre todo el catalogo de contenidos
-PROMPT y, para cada uno, cuenta cuantas reproducciones completas
-PROMPT (porcentaje_avance >= 90 %) ha tenido.
-PROMPT
-PROMPT OUT params para backend:
-PROMPT - p_total_actualizados : cantidad de registros actualizados
-PROMPT - p_mensaje          : mensaje resumen
-PROMPT
-PROMPT Se consideran:
-PROMPT · Contenido directo (pelicula, documental, musica):
-PROMPT reproducciones con id_contenido = c.id_contenido.
-PROMPT · Contenido por episodios (serie, podcast):
-PROMPT reproducciones de episodios que pertenezcan a temporadas
-PROMPT del contenido.
-PROMPT
-PROMPT Actualiza el campo CONTENIDO.popularidad con el total de
-PROMPT vistas completas y genera un resumen por consola.
-PROMPT ============================================================
+-- ============================================================
+-- b) SP_ACTUALIZAR_POPULARIDAD
+-- Cursor explicito que recorre todo el catalogo de contenidos
+-- y, para cada uno, cuenta cuantas reproducciones completas
+-- (porcentaje_avance >= 90 %) ha tenido.
+--
+-- OUT params para backend:
+-- - p_total_actualizados : cantidad de registros actualizados
+-- - p_mensaje          : mensaje resumen
+--
+-- Se consideran:
+-- · Contenido directo (pelicula, documental, musica):
+-- reproducciones con id_contenido = c.id_contenido.
+-- · Contenido por episodios (serie, podcast):
+-- reproducciones de episodios que pertenezcan a temporadas
+-- del contenido.
+--
+-- Actualiza el campo CONTENIDO.popularidad con el total de
+-- vistas completas y genera un resumen por consola.
+-- ============================================================
 CREATE OR REPLACE PROCEDURE SP_ACTUALIZAR_POPULARIDAD (
     p_total_actualizados OUT NUMBER,
     p_mensaje            OUT VARCHAR2
@@ -246,12 +244,11 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE(p_mensaje);
         RAISE_APPLICATION_ERROR(-20061, 'Error al actualizar popularidad del catalogo: ' || SQLERRM);
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT Permisos de ejecución
-PROMPT ============================================================
+-- ============================================================
+-- Permisos de ejecución
+-- ============================================================
 GRANT EXECUTE ON SP_REPORTE_MOROSIDAD TO ROL_ADMIN;
 GRANT EXECUTE ON SP_REPORTE_MOROSIDAD TO ROL_SOPORTE;
 GRANT EXECUTE ON SP_REPORTE_MOROSIDAD TO ROL_ANALISTA;
@@ -263,11 +260,11 @@ GRANT EXECUTE ON SP_ACTUALIZAR_POPULARIDAD TO ROL_ANALISTA;
 COMMIT;
 
 
-PROMPT ============================================================
-PROMPT Ejemplos de uso (descomentar para ejecutar)
-PROMPT ============================================================
+-- ============================================================
+-- Ejemplos de uso (descomentar para ejecutar)
+-- ============================================================
 /*
-PROMPT Generar reporte de morosidad
+-- Generar reporte de morosidad
 DECLARE
     v_cursor SYS_REFCURSOR;
     v_total  NUMBER;
@@ -282,9 +279,8 @@ BEGIN
     );
     DBMS_OUTPUT.PUT_LINE(v_msg);
 END;
-/
 
-PROMPT Actualizar popularidad del catalogo
+-- Actualizar popularidad del catalogo
 DECLARE
     v_total NUMBER;
     v_msg   VARCHAR2(500);
@@ -295,9 +291,8 @@ BEGIN
     );
     DBMS_OUTPUT.PUT_LINE(v_msg);
 END;
-/
 */
 
-PROMPT ============================================================
-PROMPT FIN DEL SCRIPT DE CURSORES
-PROMPT ============================================================
+-- ============================================================
+-- FIN DEL SCRIPT DE CURSORES
+-- ============================================================

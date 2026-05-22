@@ -1,27 +1,27 @@
-PROMPT ============================================================
-PROMPT QUINDIOFLIX - PROCEDIMIENTOS DE TRANSACCIONES
-PROMPT Versión: 1.0
-PROMPT ============================================================
-PROMPT Este script crea los procedimientos almacenados para manejar
-PROMPT transacciones críticas de negocio:
-PROMPT 1. Registro de un nuevo cliente (usuario + perfil + pago).
-PROMPT 2. Renovación masiva de suscripciones para usuarios activos.
-PROMPT 3. Eliminación completa de una cuenta y todos sus datos.
-PROMPT 
-PROMPT Cada procedimiento utiliza:
-PROMPT - COMMIT explícito al finalizar exitosamente.
-PROMPT - ROLLBACK (o ROLLBACK TO SAVEPOINT) ante excepciones.
-PROMPT - RAISE_APPLICATION_ERROR para errores personalizados.
-PROMPT - DBMS_OUTPUT.PUT_LINE para mostrar mensajes de seguimiento.
-PROMPT ============================================================
+-- ============================================================
+-- QUINDIOFLIX - PROCEDIMIENTOS DE TRANSACCIONES
+-- Versión: 1.0
+-- ============================================================
+-- Este script crea los procedimientos almacenados para manejar
+-- transacciones críticas de negocio:
+-- 1. Registro de un nuevo cliente (usuario + perfil + pago).
+-- 2. Renovación masiva de suscripciones para usuarios activos.
+-- 3. Eliminación completa de una cuenta y todos sus datos.
+-- 
+-- Cada procedimiento utiliza:
+-- - COMMIT explícito al finalizar exitosamente.
+-- - ROLLBACK (o ROLLBACK TO SAVEPOINT) ante excepciones.
+-- - RAISE_APPLICATION_ERROR para errores personalizados.
+-- - DBMS_OUTPUT.PUT_LINE para mostrar mensajes de seguimiento.
+-- ============================================================
 
-SET SERVEROUTPUT ON;
+-- SET SERVEROUTPUT ON;
 
-PROMPT ============================================================
-PROMPT 1. SP_REGISTRAR_CLIENTE
-PROMPT Registra un nuevo usuario, crea su perfil principal y
-PROMPT registra el primer pago de suscripción.
-PROMPT ============================================================
+-- ============================================================
+-- 1. SP_REGISTRAR_CLIENTE
+-- Registra un nuevo usuario, crea su perfil principal y
+-- registra el primer pago de suscripción.
+-- ============================================================
 CREATE OR REPLACE PROCEDURE SP_REGISTRAR_CLIENTE (
     p_nombre            IN VARCHAR2,
     p_email             IN VARCHAR2,
@@ -136,17 +136,16 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE(p_mensaje);
         RAISE_APPLICATION_ERROR(-20015, 'Error al registrar cliente: ' || SQLERRM);
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT 2. SP_RENOVAR_SUSCRIPCIONES
-PROMPT Para cada usuario ACTIVO cuya suscripción esté vencida o
-PROMPT por vencer (<= 5 días), calcula el precio, registra el
-PROMPT pago y extiende la fecha de vencimiento (+30 días).
-PROMPT Usa SAVEPOINT por cada usuario para no perder las
-PROMPT renovaciones previas si un usuario específico falla.
-PROMPT ============================================================
+-- ============================================================
+-- 2. SP_RENOVAR_SUSCRIPCIONES
+-- Para cada usuario ACTIVO cuya suscripción esté vencida o
+-- por vencer (<= 5 días), calcula el precio, registra el
+-- pago y extiende la fecha de vencimiento (+30 días).
+-- Usa SAVEPOINT por cada usuario para no perder las
+-- renovaciones previas si un usuario específico falla.
+-- ============================================================
 CREATE OR REPLACE PROCEDURE SP_RENOVAR_SUSCRIPCIONES (
     p_renovaciones OUT NUMBER,
     p_errores      OUT NUMBER,
@@ -248,17 +247,16 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE(p_mensaje);
         RAISE_APPLICATION_ERROR(-20020, 'Error fatal al renovar suscripciones: ' || SQLERRM);
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT 3. SP_ELIMINAR_CUENTA
-PROMPT Elimina todos los datos asociados a un usuario:
-PROMPT calificaciones, favoritos, reproducciones, reportes de
-PROMPT contenido, perfiles, pagos, registros de referidos y
-PROMPT finalmente el usuario. Rompe la auto-referencia de
-PROMPT id_referidor antes de eliminar.
-PROMPT ============================================================
+-- ============================================================
+-- 3. SP_ELIMINAR_CUENTA
+-- Elimina todos los datos asociados a un usuario:
+-- calificaciones, favoritos, reproducciones, reportes de
+-- contenido, perfiles, pagos, registros de referidos y
+-- finalmente el usuario. Rompe la auto-referencia de
+-- id_referidor antes de eliminar.
+-- ============================================================
 CREATE OR REPLACE PROCEDURE SP_ELIMINAR_CUENTA (
     p_id_usuario IN NUMBER,
     p_mensaje    OUT VARCHAR2
@@ -329,12 +327,11 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE(p_mensaje);
         RAISE_APPLICATION_ERROR(-20031, 'Error al eliminar la cuenta: ' || SQLERRM);
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT 4. Permisos de ejecución sobre los procedimientos
-PROMPT ============================================================
+-- ============================================================
+-- 4. Permisos de ejecución sobre los procedimientos
+-- ============================================================
 GRANT EXECUTE ON SP_REGISTRAR_CLIENTE       TO ROL_ADMIN;
 GRANT EXECUTE ON SP_REGISTRAR_CLIENTE       TO ROL_SOPORTE;
 GRANT EXECUTE ON SP_RENOVAR_SUSCRIPCIONES   TO ROL_ADMIN;
@@ -345,11 +342,11 @@ GRANT EXECUTE ON SP_ELIMINAR_CUENTA         TO ROL_SOPORTE;
 COMMIT;
 
 
-PROMPT ============================================================
-PROMPT 5. Ejemplos de uso
-PROMPT ============================================================
+-- ============================================================
+-- 5. Ejemplos de uso
+-- ============================================================
 /*
-PROMPT Registrar un nuevo cliente
+-- Registrar un nuevo cliente
 DECLARE
     v_id  NUMBER;
     v_msg VARCHAR2(500);
@@ -370,9 +367,8 @@ BEGIN
     );
     DBMS_OUTPUT.PUT_LINE(v_msg);
 END;
-/
 
-PROMPT Renovar suscripciones activas
+-- Renovar suscripciones activas
 DECLARE
     v_renov NUMBER;
     v_err   NUMBER;
@@ -385,9 +381,8 @@ BEGIN
     );
     DBMS_OUTPUT.PUT_LINE(v_msg);
 END;
-/
 
-PROMPT Eliminar una cuenta existente
+-- Eliminar una cuenta existente
 DECLARE
     v_msg VARCHAR2(500);
 BEGIN
@@ -397,9 +392,8 @@ BEGIN
     );
     DBMS_OUTPUT.PUT_LINE(v_msg);
 END;
-/
 */
 
-PROMPT ============================================================
-PROMPT FIN DEL SCRIPT DE TRANSACCIONES
-PROMPT ============================================================
+-- ============================================================
+-- FIN DEL SCRIPT DE TRANSACCIONES
+-- ============================================================

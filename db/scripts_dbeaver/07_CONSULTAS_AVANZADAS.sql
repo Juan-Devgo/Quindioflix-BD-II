@@ -1,17 +1,17 @@
-PROMPT ============================================================
-PROMPT QUINDIOFLIX - CONSULTAS AVANZADAS (Funciones de tabla)
-PROMPT Autores:
-PROMPT Juan Sebastián Londoño Ramírez
-PROMPT Juan Diego García Nieto
-PROMPT Versión: 2.0
-PROMPT ============================================================
-PROMPT Contenido:
-PROMPT 3.1.1  Consultas parametrizadas      (&, &&, DEFINE)
-PROMPT 3.1.2  Tablas de cruzamiento         (PIVOT / UNPIVOT)
-PROMPT 3.1.3  Funciones avanzadas de GROUP BY
-PROMPT ============================================================
+-- ============================================================
+-- QUINDIOFLIX - CONSULTAS AVANZADAS (Funciones de tabla)
+-- Autores:
+-- Juan Sebastián Londoño Ramírez
+-- Juan Diego García Nieto
+-- Versión: 2.0
+-- ============================================================
+-- Contenido:
+-- 3.1.1  Consultas parametrizadas      (&, &&, DEFINE)
+-- 3.1.2  Tablas de cruzamiento         (PIVOT / UNPIVOT)
+-- 3.1.3  Funciones avanzadas de GROUP BY
+-- ============================================================
 
-SET SERVEROUTPUT ON;
+-- SET SERVEROUTPUT ON;
 
 -- ================================================================
 -- TIPOS DE DATOS NECESARIOS PARA LAS FUNCIONES DE TABLA
@@ -21,40 +21,32 @@ CREATE OR REPLACE TYPE T_TOP_CONTENIDO AS OBJECT (
     contenido          VARCHAR2(300),
     total_reproducciones NUMBER
 );
-/
 
 CREATE OR REPLACE TYPE TT_TOP_CONTENIDO AS TABLE OF T_TOP_CONTENIDO;
-/
 
 CREATE OR REPLACE TYPE T_INGRESO_PLAN AS OBJECT (
     plan_suscripcion  VARCHAR2(50),
     ingresos_totales  NUMBER,
     cantidad_pagos    NUMBER
 );
-/
 
 CREATE OR REPLACE TYPE TT_INGRESO_PLAN AS TABLE OF T_INGRESO_PLAN;
-/
 
 CREATE OR REPLACE TYPE T_CALIF_PROMEDIO AS OBJECT (
     categoria              VARCHAR2(15),
     promedio_estrellas     NUMBER,
     total_calificaciones   NUMBER
 );
-/
 
 CREATE OR REPLACE TYPE TT_CALIF_PROMEDIO AS TABLE OF T_CALIF_PROMEDIO;
-/
 
 CREATE OR REPLACE TYPE T_CALIF_POR_GENERO AS OBJECT (
     categoria   VARCHAR2(15),
     estrellas   NUMBER,
     cantidad    NUMBER
 );
-/
 
 CREATE OR REPLACE TYPE TT_CALIF_POR_GENERO AS TABLE OF T_CALIF_POR_GENERO;
-/
 
 CREATE OR REPLACE TYPE T_USUARIOS_PIVOT AS OBJECT (
     ciudad    VARCHAR2(100),
@@ -62,10 +54,8 @@ CREATE OR REPLACE TYPE T_USUARIOS_PIVOT AS OBJECT (
     Estandar  NUMBER,
     Premium   NUMBER
 );
-/
 
 CREATE OR REPLACE TYPE TT_USUARIOS_PIVOT AS TABLE OF T_USUARIOS_PIVOT;
-/
 
 CREATE OR REPLACE TYPE T_VISTAS_PIVOT AS OBJECT (
     categoria   VARCHAR2(15),
@@ -74,30 +64,24 @@ CREATE OR REPLACE TYPE T_VISTAS_PIVOT AS OBJECT (
     TV          NUMBER,
     Computador  NUMBER
 );
-/
 
 CREATE OR REPLACE TYPE TT_VISTAS_PIVOT AS TABLE OF T_VISTAS_PIVOT;
-/
 
 CREATE OR REPLACE TYPE T_USUARIOS_UNPIVOT AS OBJECT (
     ciudad           VARCHAR2(100),
     plan             VARCHAR2(50),
     usuarios_activos NUMBER
 );
-/
 
 CREATE OR REPLACE TYPE TT_USUARIOS_UNPIVOT AS TABLE OF T_USUARIOS_UNPIVOT;
-/
 
 CREATE OR REPLACE TYPE T_RESUMEN_UNPIVOT AS OBJECT (
     plan      VARCHAR2(50),
     mes       VARCHAR2(20),
     ingresos  NUMBER
 );
-/
 
 CREATE OR REPLACE TYPE TT_RESUMEN_UNPIVOT AS TABLE OF T_RESUMEN_UNPIVOT;
-/
 
 CREATE OR REPLACE TYPE T_INGRESOS_ROLLUP AS OBJECT (
     ciudad         VARCHAR2(100),
@@ -105,20 +89,16 @@ CREATE OR REPLACE TYPE T_INGRESOS_ROLLUP AS OBJECT (
     ingresos       NUMBER,
     cantidad_pagos NUMBER
 );
-/
 
 CREATE OR REPLACE TYPE TT_INGRESOS_ROLLUP AS TABLE OF T_INGRESOS_ROLLUP;
-/
 
 CREATE OR REPLACE TYPE T_VISTAS_CUBE AS OBJECT (
     categoria    VARCHAR2(15),
     dispositivo  VARCHAR2(50),
     total_vistas NUMBER
 );
-/
 
 CREATE OR REPLACE TYPE TT_VISTAS_CUBE AS TABLE OF T_VISTAS_CUBE;
-/
 
 CREATE OR REPLACE TYPE T_INGRESOS_GROUPING AS OBJECT (
     ciudad       VARCHAR2(100),
@@ -127,30 +107,26 @@ CREATE OR REPLACE TYPE T_INGRESOS_GROUPING AS OBJECT (
     flag_ciudad  NUMBER,
     flag_plan    NUMBER
 );
-/
 
 CREATE OR REPLACE TYPE TT_INGRESOS_GROUPING AS TABLE OF T_INGRESOS_GROUPING;
-/
 
 CREATE OR REPLACE TYPE T_VISTAS_GROUPING_SETS AS OBJECT (
     categoria    VARCHAR2(15),
     ciudad       VARCHAR2(100),
     total_vistas NUMBER
 );
-/
 
 CREATE OR REPLACE TYPE TT_VISTAS_GROUPING_SETS AS TABLE OF T_VISTAS_GROUPING_SETS;
-/
 
 
-PROMPT ============================================================
-PROMPT 3.1.1 CONSULTAS PARAMETRIZADAS
-PROMPT ============================================================
+-- ============================================================
+-- 3.1.1 CONSULTAS PARAMETRIZADAS
+-- ============================================================
 
-PROMPT ------------------------------------------------------------
-PROMPT a) Top 10 contenidos más vistos en una ciudad
-PROMPT Parámetro: p_ciudad (VARCHAR2)
-PROMPT ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- a) Top 10 contenidos más vistos en una ciudad
+-- Parámetro: p_ciudad (VARCHAR2)
+-- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION FN_TOP_10_CONTENIDOS_CIUDAD (
     p_ciudad IN VARCHAR2
 ) RETURN TT_TOP_CONTENIDO PIPELINED AS
@@ -176,12 +152,11 @@ BEGIN
     END LOOP;
     RETURN;
 END;
-/
 
-PROMPT ------------------------------------------------------------
-PROMPT b) Ingresos por plan de suscripción para un mes y año
-PROMPT Parámetros: p_mes (NUMBER), p_anio (NUMBER)
-PROMPT ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- b) Ingresos por plan de suscripción para un mes y año
+-- Parámetros: p_mes (NUMBER), p_anio (NUMBER)
+-- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION FN_INGRESOS_POR_PLAN_MES_ANIO (
     p_mes   IN NUMBER,
     p_anio  IN NUMBER
@@ -204,12 +179,11 @@ BEGIN
     END LOOP;
     RETURN;
 END;
-/
 
-PROMPT ------------------------------------------------------------
-PROMPT c) Calificación promedio por categoría para un género
-PROMPT Parámetro: p_genero (VARCHAR2)
-PROMPT ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- c) Calificación promedio por categoría para un género
+-- Parámetro: p_genero (VARCHAR2)
+-- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION FN_CALIFICACION_PROMEDIO_GENERO (
     p_genero IN VARCHAR2
 ) RETURN TT_CALIF_PROMEDIO PIPELINED AS
@@ -231,13 +205,12 @@ BEGIN
     END LOOP;
     RETURN;
 END;
-/
 
-PROMPT ------------------------------------------------------------
-PROMPT c.2) Total de contenidos por calificación para un género
-PROMPT (Consulta complementaria que reutiliza el género)
-PROMPT Parámetro: p_genero (VARCHAR2)
-PROMPT ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- c.2) Total de contenidos por calificación para un género
+-- (Consulta complementaria que reutiliza el género)
+-- Parámetro: p_genero (VARCHAR2)
+-- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION FN_CALIFICACIONES_POR_GENERO (
     p_genero IN VARCHAR2
 ) RETURN TT_CALIF_POR_GENERO PIPELINED AS
@@ -259,16 +232,15 @@ BEGIN
     END LOOP;
     RETURN;
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT 3.1.2 TABLAS DE CRUZAMIENTO – PIVOT Y UNPIVOT
-PROMPT ============================================================
+-- ============================================================
+-- 3.1.2 TABLAS DE CRUZAMIENTO – PIVOT Y UNPIVOT
+-- ============================================================
 
-PROMPT ------------------------------------------------------------
-PROMPT a) PIVOT: Usuarios activos por ciudad (filas) y plan (columnas)
-PROMPT ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- a) PIVOT: Usuarios activos por ciudad (filas) y plan (columnas)
+-- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION FN_USUARIOS_ACTIVOS_PIVOT
 RETURN TT_USUARIOS_PIVOT PIPELINED AS
 BEGIN
@@ -292,11 +264,10 @@ BEGIN
     END LOOP;
     RETURN;
 END;
-/
 
-PROMPT ------------------------------------------------------------
-PROMPT b) PIVOT: Total de vistas por categoría (filas) y dispositivo (columnas)
-PROMPT ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- b) PIVOT: Total de vistas por categoría (filas) y dispositivo (columnas)
+-- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION FN_VISTAS_CATEGORIA_DISPOSITIVO_PIVOT
 RETURN TT_VISTAS_PIVOT PIPELINED AS
 BEGIN
@@ -324,12 +295,11 @@ BEGIN
     END LOOP;
     RETURN;
 END;
-/
 
-PROMPT ------------------------------------------------------------
-PROMPT c) UNPIVOT: Convertir el reporte PIVOT de usuarios activos
-PROMPT de nuevo a filas para análisis detallado.
-PROMPT ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- c) UNPIVOT: Convertir el reporte PIVOT de usuarios activos
+-- de nuevo a filas para análisis detallado.
+-- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION FN_USUARIOS_ACTIVOS_UNPIVOT
 RETURN TT_USUARIOS_UNPIVOT PIPELINED AS
 BEGIN
@@ -361,12 +331,11 @@ BEGIN
     END LOOP;
     RETURN;
 END;
-/
 
-PROMPT ------------------------------------------------------------
-PROMPT d) UNPIVOT: Convertir un resumen mensual con columnas por
-PROMPT mes (Enero, Febrero, Marzo) en filas individuales.
-PROMPT ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- d) UNPIVOT: Convertir un resumen mensual con columnas por
+-- mes (Enero, Febrero, Marzo) en filas individuales.
+-- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION FN_RESUMEN_MENSUAL_UNPIVOT
 RETURN TT_RESUMEN_UNPIVOT PIPELINED AS
 BEGIN
@@ -396,17 +365,16 @@ BEGIN
     END LOOP;
     RETURN;
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT 3.1.3 FUNCIONES AVANZADAS DE GROUP BY
-PROMPT ============================================================
+-- ============================================================
+-- 3.1.3 FUNCIONES AVANZADAS DE GROUP BY
+-- ============================================================
 
-PROMPT ------------------------------------------------------------
-PROMPT a) ROLLUP: Ingresos por ciudad y plan, con subtotales por
-PROMPT ciudad y total general.
-PROMPT ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- a) ROLLUP: Ingresos por ciudad y plan, con subtotales por
+-- ciudad y total general.
+-- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION FN_INGRESOS_ROLLUP
 RETURN TT_INGRESOS_ROLLUP PIPELINED AS
 BEGIN
@@ -429,12 +397,11 @@ BEGIN
     END LOOP;
     RETURN;
 END;
-/
 
-PROMPT ------------------------------------------------------------
-PROMPT b) CUBE: Vistas por categoría de contenido y dispositivo,
-PROMPT incluyendo todas las combinaciones posibles.
-PROMPT ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- b) CUBE: Vistas por categoría de contenido y dispositivo,
+-- incluyendo todas las combinaciones posibles.
+-- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION FN_VISTAS_CUBE
 RETURN TT_VISTAS_CUBE PIPELINED AS
 BEGIN
@@ -462,12 +429,11 @@ BEGIN
     END LOOP;
     RETURN;
 END;
-/
 
-PROMPT ------------------------------------------------------------
-PROMPT c) GROUPING(): Reemplazar los NULL generados por ROLLUP/CUBE
-PROMPT con etiquetas legibles.
-PROMPT ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- c) GROUPING(): Reemplazar los NULL generados por ROLLUP/CUBE
+-- con etiquetas legibles.
+-- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION FN_INGRESOS_GROUPING
 RETURN TT_INGRESOS_GROUPING PIPELINED AS
 BEGIN
@@ -491,12 +457,11 @@ BEGIN
     END LOOP;
     RETURN;
 END;
-/
 
-PROMPT ------------------------------------------------------------
-PROMPT d) GROUPING SETS: Totales únicamente por categoría y por
-PROMPT ciudad, sin el detalle de la cruza entre ambas.
-PROMPT ------------------------------------------------------------
+-- ------------------------------------------------------------
+-- d) GROUPING SETS: Totales únicamente por categoría y por
+-- ciudad, sin el detalle de la cruza entre ambas.
+-- ------------------------------------------------------------
 CREATE OR REPLACE FUNCTION FN_VISTAS_GROUPING_SETS
 RETURN TT_VISTAS_GROUPING_SETS PIPELINED AS
 BEGIN
@@ -527,12 +492,11 @@ BEGIN
     END LOOP;
     RETURN;
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT Permisos de ejecución
-PROMPT ============================================================
+-- ============================================================
+-- Permisos de ejecución
+-- ============================================================
 GRANT EXECUTE ON FN_TOP_10_CONTENIDOS_CIUDAD TO ROL_ANALISTA;
 GRANT EXECUTE ON FN_TOP_10_CONTENIDOS_CIUDAD TO ROL_ADMIN;
 
@@ -571,32 +535,29 @@ GRANT EXECUTE ON FN_VISTAS_GROUPING_SETS TO ROL_ADMIN;
 
 COMMIT;
 
-PROMPT ============================================================
-PROMPT Ejemplos de uso (descomentar para probar)
-PROMPT ============================================================
+-- ============================================================
+-- Ejemplos de uso (descomentar para probar)
+-- ============================================================
 /*
 BEGIN
     FOR r IN (SELECT * FROM TABLE(FN_TOP_10_CONTENIDOS_CIUDAD('Armenia'))) LOOP
         DBMS_OUTPUT.PUT_LINE(r.contenido || ' - ' || r.total_reproducciones);
     END LOOP;
 END;
-/
 
 BEGIN
     FOR r IN (SELECT * FROM TABLE(FN_INGRESOS_POR_PLAN_MES_ANIO(1, 2024))) LOOP
         DBMS_OUTPUT.PUT_LINE(r.plan_suscripcion || ': $' || r.ingresos_totales || ' (' || r.cantidad_pagos || ' pagos)');
     END LOOP;
 END;
-/
 
 BEGIN
     FOR r IN (SELECT * FROM TABLE(FN_CALIFICACION_PROMEDIO_GENERO('Drama'))) LOOP
         DBMS_OUTPUT.PUT_LINE(r.categoria || ': ' || r.promedio_estrellas || ' estrellas');
     END LOOP;
 END;
-/
 */
 
-PROMPT ============================================================
-PROMPT FIN DEL SCRIPT DE CONSULTAS AVANZADAS (Funciones de tabla)
-PROMPT ============================================================
+-- ============================================================
+-- FIN DEL SCRIPT DE CONSULTAS AVANZADAS (Funciones de tabla)
+-- ============================================================

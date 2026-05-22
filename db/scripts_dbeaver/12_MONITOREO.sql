@@ -1,19 +1,19 @@
-PROMPT ============================================================
-PROMPT QUINDIOFLIX - MONITOREO DEL SISTEMA (SOLO DBA)
-PROMPT Versión: 1.0
-PROMPT ============================================================
-PROMPT Este script consulta el estado y métricas clave de la base
-PROMPT de datos QuindioFlix.  Requiere permisos de DBA.
-PROMPT 
-PROMPT Secciones:
-PROMPT 1. Tablas del esquema (tamaño físico y número de registros)
-PROMPT 2. Usuarios, roles, estado y privilegios
-PROMPT 3. Tablespaces (tamaño, uso y porcentaje)
-PROMPT 4. Rendimiento (QPS, latencia, conexiones, caché, SQL costoso)
-PROMPT 5. Backups (tipo, fecha, tamaño, duración, estado)
-PROMPT ============================================================
+-- ============================================================
+-- QUINDIOFLIX - MONITOREO DEL SISTEMA (SOLO DBA)
+-- Versión: 1.0
+-- ============================================================
+-- Este script consulta el estado y métricas clave de la base
+-- de datos QuindioFlix.  Requiere permisos de DBA.
+-- 
+-- Secciones:
+-- 1. Tablas del esquema (tamaño físico y número de registros)
+-- 2. Usuarios, roles, estado y privilegios
+-- 3. Tablespaces (tamaño, uso y porcentaje)
+-- 4. Rendimiento (QPS, latencia, conexiones, caché, SQL costoso)
+-- 5. Backups (tipo, fecha, tamaño, duración, estado)
+-- ============================================================
 
-PROMPT Verificacion de privilegios DBA antes de ejecutar consultas de monitoreo
+-- Verificacion de privilegios DBA antes de ejecutar consultas de monitoreo
 DECLARE
     v_count NUMBER;
 BEGIN
@@ -24,47 +24,46 @@ BEGIN
             'Ejecute como SYSDBA o usuario con dichos privilegios.');
     END IF;
 END;
-/
 
-SET SERVEROUTPUT ON;
-SET LINESIZE 200;
-SET PAGESIZE 100;
-COLUMN table_name        FORMAT A30
-COLUMN num_rows          FORMAT 999,999,999
-COLUMN size_mb           FORMAT 999,999.99
-COLUMN username          FORMAT A25
-COLUMN account_status    FORMAT A20
-COLUMN role_name         FORMAT A25
-COLUMN privilege         FORMAT A35
-COLUMN tablespace_name   FORMAT A30
-COLUMN total_mb          FORMAT 999,999.99
-COLUMN used_mb           FORMAT 999,999.99
-COLUMN free_mb           FORMAT 999,999.99
-COLUMN pct_used          FORMAT 999.99
-COLUMN sql_text          FORMAT A80 WRAP
-COLUMN executions        FORMAT 999,999,999
-COLUMN avg_time_sec      FORMAT 999,999.999
-COLUMN event             FORMAT A40
-COLUMN backup_type       FORMAT A15
-COLUMN start_time        FORMAT A20
-COLUMN end_time          FORMAT A20
-COLUMN backup_size_mb    FORMAT 999,999.99
-COLUMN duration_min      FORMAT 999.99
-COLUMN status            FORMAT A15
+-- SET SERVEROUTPUT ON;
+-- SET LINESIZE 200;
+-- SET PAGESIZE 100;
+-- COLUMN table_name        FORMAT A30
+-- COLUMN num_rows          FORMAT 999,999,999
+-- COLUMN size_mb           FORMAT 999,999.99
+-- COLUMN username          FORMAT A25
+-- COLUMN account_status    FORMAT A20
+-- COLUMN role_name         FORMAT A25
+-- COLUMN privilege         FORMAT A35
+-- COLUMN tablespace_name   FORMAT A30
+-- COLUMN total_mb          FORMAT 999,999.99
+-- COLUMN used_mb           FORMAT 999,999.99
+-- COLUMN free_mb           FORMAT 999,999.99
+-- COLUMN pct_used          FORMAT 999.99
+-- COLUMN sql_text          FORMAT A80 WRAP
+-- COLUMN executions        FORMAT 999,999,999
+-- COLUMN avg_time_sec      FORMAT 999,999.999
+-- COLUMN event             FORMAT A40
+-- COLUMN backup_type       FORMAT A15
+-- COLUMN start_time        FORMAT A20
+-- COLUMN end_time          FORMAT A20
+-- COLUMN backup_size_mb    FORMAT 999,999.99
+-- COLUMN duration_min      FORMAT 999.99
+-- COLUMN status            FORMAT A15
 
-PROMPT ============================================================
-PROMPT QUINDIOFLIX - INFORME DE MONITOREO DEL SISTEMA
-PROMPT Ejecutar únicamente con cuenta DBA / SYSDBA
-PROMPT ============================================================
-PROMPT 
+-- ============================================================
+-- QUINDIOFLIX - INFORME DE MONITOREO DEL SISTEMA
+-- Ejecutar únicamente con cuenta DBA / SYSDBA
+-- ============================================================
+-- 
 
-PROMPT ============================================================
-PROMPT 1. TABLAS DEL ESQUEMA C_QUINDIOFLIX
-PROMPT Nombre, número de filas y tamaño físico aproximado (MB)
-PROMPT ============================================================
-PROMPT --------------------------------------------------------
-PROMPT 1. TABLAS DEL ESQUEMA C_QUINDIOFLIX
-PROMPT --------------------------------------------------------
+-- ============================================================
+-- 1. TABLAS DEL ESQUEMA C_QUINDIOFLIX
+-- Nombre, número de filas y tamaño físico aproximado (MB)
+-- ============================================================
+-- --------------------------------------------------------
+-- 1. TABLAS DEL ESQUEMA C_QUINDIOFLIX
+-- --------------------------------------------------------
 
 SELECT
     t.table_name,
@@ -81,15 +80,15 @@ GROUP BY t.table_name, t.num_rows
 ORDER BY size_mb DESC, t.table_name;
 
 
-PROMPT ============================================================
-PROMPT 2. USUARIOS DEL SISTEMA – ROLES, ESTADO Y PRIVILEGIOS
-PROMPT ============================================================
-PROMPT 
-PROMPT --------------------------------------------------------
-PROMPT 2. USUARIOS, ROLES Y PRIVILEGIOS
-PROMPT --------------------------------------------------------
+-- ============================================================
+-- 2. USUARIOS DEL SISTEMA – ROLES, ESTADO Y PRIVILEGIOS
+-- ============================================================
+-- 
+-- --------------------------------------------------------
+-- 2. USUARIOS, ROLES Y PRIVILEGIOS
+-- --------------------------------------------------------
 
-PROMPT 2a. Usuarios del sistema y su estado
+-- 2a. Usuarios del sistema y su estado
 SELECT
     username,
     account_status,
@@ -107,7 +106,7 @@ WHERE username IN (
 )
 ORDER BY username;
 
-PROMPT 2b. Roles asignados a cada usuario
+-- 2b. Roles asignados a cada usuario
 SELECT
     grantee   AS username,
     granted_role AS role_name,
@@ -123,7 +122,7 @@ WHERE grantee IN (
 )
 ORDER BY grantee, granted_role;
 
-PROMPT 2c. Privilegios de sistema otorgados directamente
+-- 2c. Privilegios de sistema otorgados directamente
 SELECT
     grantee   AS username,
     privilege,
@@ -142,7 +141,7 @@ WHERE grantee IN (
 )
 ORDER BY grantee, privilege;
 
-PROMPT 2d. Privilegios sobre objetos (tablas) del esquema QuindioFlix
+-- 2d. Privilegios sobre objetos (tablas) del esquema QuindioFlix
 SELECT
     grantee   AS username_or_role,
     owner     AS schema,
@@ -164,13 +163,13 @@ WHERE owner = 'C_QUINDIOFLIX'
 ORDER BY grantee, table_name, privilege;
 
 
-PROMPT ============================================================
-PROMPT 3. TABLESPACES – TAMAÑO FÍSICO Y PORCENTAJE DE USO
-PROMPT ============================================================
-PROMPT 
-PROMPT --------------------------------------------------------
-PROMPT 3. TABLESPACES – TAMAÑO Y USO
-PROMPT --------------------------------------------------------
+-- ============================================================
+-- 3. TABLESPACES – TAMAÑO FÍSICO Y PORCENTAJE DE USO
+-- ============================================================
+-- 
+-- --------------------------------------------------------
+-- 3. TABLESPACES – TAMAÑO Y USO
+-- --------------------------------------------------------
 
 SELECT
     ts.tablespace_name,
@@ -196,17 +195,17 @@ LEFT JOIN (
 ORDER BY pct_used DESC NULLS LAST;
 
 
-PROMPT ============================================================
-PROMPT 4. RENDIMIENTO – MÉTRICAS CLAVE
-PROMPT ============================================================
-PROMPT 
-PROMPT --------------------------------------------------------
-PROMPT 4. RENDIMIENTO
-PROMPT --------------------------------------------------------
+-- ============================================================
+-- 4. RENDIMIENTO – MÉTRICAS CLAVE
+-- ============================================================
+-- 
+-- --------------------------------------------------------
+-- 4. RENDIMIENTO
+-- --------------------------------------------------------
 
-PROMPT 4a. QPS (Consultas por segundo) – basado en estadísticas de ejecución
-PROMPT 
-PROMPT --- QPS (Consultas por segundo, última hora) ---
+-- 4a. QPS (Consultas por segundo) – basado en estadísticas de ejecución
+-- 
+-- --- QPS (Consultas por segundo, última hora) ---
 SELECT
     ROUND(
         (SELECT VALUE FROM v$sysstat WHERE name = 'execute count')
@@ -215,8 +214,8 @@ SELECT
     ) AS qps_estimated
 FROM dual;
 
-PROMPT Nota: en Oracle 12c+, v$sysmetric_history ofrece métricas de rendimiento más fiables.
-PROMPT Si la consulta anterior no retorna valores, se usa el siguiente bloque PL/SQL alternativo.
+-- Nota: en Oracle 12c+, v$sysmetric_history ofrece métricas de rendimiento más fiables.
+-- Si la consulta anterior no retorna valores, se usa el siguiente bloque PL/SQL alternativo.
 
 BEGIN
     DBMS_OUTPUT.PUT_LINE('--- Métricas de rendimiento (v$sysmetric) ---');
@@ -238,11 +237,10 @@ BEGIN
         );
     END LOOP;
 END;
-/
 
-PROMPT 4b. P95 Latency – basado en esperas activas (eventos de espera)
-PROMPT 
-PROMPT --- Esperas activas principales (latencia / eventos de espera) ---
+-- 4b. P95 Latency – basado en esperas activas (eventos de espera)
+-- 
+-- --- Esperas activas principales (latencia / eventos de espera) ---
 SELECT
     event,
     total_waits,
@@ -256,9 +254,9 @@ WHERE wait_class != 'Idle'
 ORDER BY time_waited_micro DESC
 FETCH FIRST 10 ROWS ONLY;
 
-PROMPT 4c. Número de conexiones activas y totales
-PROMPT 
-PROMPT --- Conexiones activas ---
+-- 4c. Número de conexiones activas y totales
+-- 
+-- --- Conexiones activas ---
 SELECT
     COUNT(*) AS total_connections,
     COUNT(CASE WHEN status = 'ACTIVE' THEN 1 END) AS active_connections,
@@ -266,9 +264,9 @@ SELECT
 FROM v$session
 WHERE type = 'USER';
 
-PROMPT 4d. Ratio de aciertos de caché (Buffer Cache Hit Ratio)
-PROMPT 
-PROMPT --- Cache Hit Ratio (Buffer Cache) ---
+-- 4d. Ratio de aciertos de caché (Buffer Cache Hit Ratio)
+-- 
+-- --- Cache Hit Ratio (Buffer Cache) ---
 SELECT
     ROUND(
         (1 - (phy.value / (cur.value + con.value))) * 100, 2
@@ -278,16 +276,16 @@ WHERE cur.name = 'db block gets'
   AND con.name = 'consistent gets'
   AND phy.name = 'physical reads';
 
-PROMPT 4e. Librería (Library Cache) Hit Ratio
-PROMPT 
-PROMPT --- Cache Hit Ratio (Library Cache) ---
+-- 4e. Librería (Library Cache) Hit Ratio
+-- 
+-- --- Cache Hit Ratio (Library Cache) ---
 SELECT
     ROUND(SUM(pins) / NULLIF(SUM(pins) + SUM(reloads), 0) * 100, 2) AS library_cache_hit_ratio_pct
 FROM v$librarycache;
 
-PROMPT 4f. Sentencias SQL más costosas (ejecuciones y tiempo promedio)
-PROMPT 
-PROMPT --- Top 15 sentencias SQL más costosas (por tiempo total) ---
+-- 4f. Sentencias SQL más costosas (ejecuciones y tiempo promedio)
+-- 
+-- --- Top 15 sentencias SQL más costosas (por tiempo total) ---
 SELECT
     sql_id,
     SUBSTR(sql_text, 1, 80) AS sql_text,
@@ -303,17 +301,17 @@ ORDER BY elapsed_time DESC
 FETCH FIRST 15 ROWS ONLY;
 
 
-PROMPT ============================================================
-PROMPT 5. BACKUPS – TIPO, FECHA, TAMAÑO, DURACIÓN Y ESTADO
-PROMPT ============================================================
-PROMPT 
-PROMPT --------------------------------------------------------
-PROMPT 5. BACKUPS RECIENTES
-PROMPT --------------------------------------------------------
+-- ============================================================
+-- 5. BACKUPS – TIPO, FECHA, TAMAÑO, DURACIÓN Y ESTADO
+-- ============================================================
+-- 
+-- --------------------------------------------------------
+-- 5. BACKUPS RECIENTES
+-- --------------------------------------------------------
 
-PROMPT 5a. Backups de RMAN (archivos de datos, controlfile, spfile)
-PROMPT 
-PROMPT --- Backups RMAN (Datafile / Controlfile / SPFILE) ---
+-- 5a. Backups de RMAN (archivos de datos, controlfile, spfile)
+-- 
+-- --- Backups RMAN (Datafile / Controlfile / SPFILE) ---
 SELECT
     CASE b.backup_type
         WHEN 'D' THEN 'FULL'
@@ -332,9 +330,9 @@ FROM v$backup_set_details b
 WHERE b.start_time >= SYSDATE - 30
 ORDER BY b.start_time DESC;
 
-PROMPT 5b. Backups de archive logs (RMAN)
-PROMPT 
-PROMPT --- Backups de Archive Logs (RMAN) ---
+-- 5b. Backups de archive logs (RMAN)
+-- 
+-- --- Backups de Archive Logs (RMAN) ---
 SELECT
     'ARCHIVELOG' AS backup_type,
     b.start_time,
@@ -350,9 +348,9 @@ WHERE b.backup_type = 'L'
   AND b.start_time >= SYSDATE - 30
 ORDER BY b.start_time DESC;
 
-PROMPT 5c. Resumen de copias de seguridad (RMAN) por día (últimos 7 días)
-PROMPT 
-PROMPT --- Resumen diario de backups (últimos 7 días) ---
+-- 5c. Resumen de copias de seguridad (RMAN) por día (últimos 7 días)
+-- 
+-- --- Resumen diario de backups (últimos 7 días) ---
 SELECT
     TRUNC(start_time) AS backup_date,
     CASE backup_type
@@ -368,6 +366,6 @@ WHERE start_time >= SYSDATE - 7
 GROUP BY TRUNC(start_time), backup_type
 ORDER BY backup_date DESC, backup_type;
 
-PROMPT ============================================================;
-PROMPT FIN DEL INFORME DE MONITOREO;
-PROMPT ============================================================;
+-- ============================================================;
+-- FIN DEL INFORME DE MONITOREO;
+-- ============================================================;

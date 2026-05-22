@@ -1,22 +1,22 @@
-PROMPT ============================================================
-PROMPT QUINDIOFLIX - PROCEDIMIENTOS ALMACENADOS (3.2.2)
-PROMPT Versión: 1.0
-PROMPT ============================================================
-PROMPT Procedimientos de negocio:
-PROMPT a) SP_REGISTRAR_USUARIO  – registro completo de usuario.
-PROMPT b) SP_CHANGE_PLAN        – cambio de plan con validaciones.
-PROMPT c) SP_CONSUMPTION_REPORT – reporte de consumo por perfil y
-PROMPT categoría mediante SYS_REFCURSOR.
-PROMPT ============================================================
+-- ============================================================
+-- QUINDIOFLIX - PROCEDIMIENTOS ALMACENADOS (3.2.2)
+-- Versión: 1.0
+-- ============================================================
+-- Procedimientos de negocio:
+-- a) SP_REGISTRAR_USUARIO  – registro completo de usuario.
+-- b) SP_CHANGE_PLAN        – cambio de plan con validaciones.
+-- c) SP_CONSUMPTION_REPORT – reporte de consumo por perfil y
+-- categoría mediante SYS_REFCURSOR.
+-- ============================================================
 
-SET SERVEROUTPUT ON;
+-- SET SERVEROUTPUT ON;
 
-PROMPT ============================================================
-PROMPT a) SP_REGISTRAR_USUARIO
-PROMPT Recibe la información del usuario y el plan seleccionado,
-PROMPT valida que el email no exista, crea la cuenta, genera un
-PROMPT perfil por defecto (ADULTO) y registra el primer pago.
-PROMPT ============================================================
+-- ============================================================
+-- a) SP_REGISTRAR_USUARIO
+-- Recibe la información del usuario y el plan seleccionado,
+-- valida que el email no exista, crea la cuenta, genera un
+-- perfil por defecto (ADULTO) y registra el primer pago.
+-- ============================================================
 CREATE OR REPLACE PROCEDURE SP_REGISTRAR_USUARIO (
     p_nombre           IN VARCHAR2,
     p_email            IN VARCHAR2,
@@ -97,16 +97,15 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE(p_mensaje);
         RAISE_APPLICATION_ERROR(-20064, 'Error al registrar usuario: ' || SQLERRM);
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT b) SP_CHANGE_PLAN
-PROMPT Recibe el ID de usuario y el nuevo plan, valida que sea
-PROMPT un cambio permitido (no puede bajar de plan si tiene más
-PROMPT perfiles activos de los permitidos), actualiza el plan y
-PROMPT registra el cambio como un nuevo pago.
-PROMPT ============================================================
+-- ============================================================
+-- b) SP_CHANGE_PLAN
+-- Recibe el ID de usuario y el nuevo plan, valida que sea
+-- un cambio permitido (no puede bajar de plan si tiene más
+-- perfiles activos de los permitidos), actualiza el plan y
+-- registra el cambio como un nuevo pago.
+-- ============================================================
 CREATE OR REPLACE PROCEDURE SP_CHANGE_PLAN (
     p_id_usuario    IN NUMBER,
     p_id_nuevo_plan IN NUMBER,
@@ -180,16 +179,15 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE(p_mensaje);
         RAISE_APPLICATION_ERROR(-20072, 'Error al cambiar de plan: ' || SQLERRM);
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT c) SP_CONSUMPTION_REPORT
-PROMPT Recibe un ID de usuario y un rango de fechas, y devuelve
-PROMPT un cursor con el reporte detallado de reproducciones de
-PROMPT cada perfil, agrupado por categoria (genero), incluyendo
-PROMPT totales de tiempo consumido en minutos.
-PROMPT ============================================================
+-- ============================================================
+-- c) SP_CONSUMPTION_REPORT
+-- Recibe un ID de usuario y un rango de fechas, y devuelve
+-- un cursor con el reporte detallado de reproducciones de
+-- cada perfil, agrupado por categoria (genero), incluyendo
+-- totales de tiempo consumido en minutos.
+-- ============================================================
 CREATE OR REPLACE PROCEDURE SP_CONSUMPTION_REPORT (
     p_id_usuario   IN NUMBER,
     p_fecha_inicio IN DATE,
@@ -247,12 +245,11 @@ EXCEPTION
         DBMS_OUTPUT.PUT_LINE(p_mensaje);
         RAISE_APPLICATION_ERROR(-20081, 'Error al generar el reporte de consumo: ' || SQLERRM);
 END;
-/
 
 
-PROMPT ============================================================
-PROMPT Permisos de ejecución
-PROMPT ============================================================
+-- ============================================================
+-- Permisos de ejecución
+-- ============================================================
 GRANT EXECUTE ON SP_REGISTRAR_USUARIO   TO ROL_ADMIN;
 GRANT EXECUTE ON SP_REGISTRAR_USUARIO   TO ROL_SOPORTE;
 
@@ -266,11 +263,11 @@ GRANT EXECUTE ON SP_CONSUMPTION_REPORT  TO ROL_ANALISTA;
 COMMIT;
 
 
-PROMPT ============================================================
-PROMPT Ejemplos de uso
-PROMPT ============================================================
+-- ============================================================
+-- Ejemplos de uso
+-- ============================================================
 /*
-PROMPT a) Registrar un nuevo usuario
+-- a) Registrar un nuevo usuario
 DECLARE
     v_id  NUMBER;
     v_msg VARCHAR2(500);
@@ -288,9 +285,8 @@ BEGIN
     );
     DBMS_OUTPUT.PUT_LINE(v_msg);
 END;
-/
 
-PROMPT b) Cambiar de plan
+-- b) Cambiar de plan
 DECLARE
     v_msg VARCHAR2(500);
 BEGIN
@@ -301,9 +297,8 @@ BEGIN
     );
     DBMS_OUTPUT.PUT_LINE(v_msg);
 END;
-/
 
-PROMPT c) Reporte de consumo
+-- c) Reporte de consumo
 DECLARE
     v_cursor SYS_REFCURSOR;
     v_msg    VARCHAR2(500);
@@ -332,9 +327,8 @@ BEGIN
     END LOOP;
     CLOSE v_cursor;
 END;
-/
 */
 
-PROMPT ============================================================
-PROMPT FIN DEL SCRIPT DE PROCEDIMIENTOS
-PROMPT ============================================================
+-- ============================================================
+-- FIN DEL SCRIPT DE PROCEDIMIENTOS
+-- ============================================================
