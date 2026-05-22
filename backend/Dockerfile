@@ -9,7 +9,8 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-ENV PORT=3001
-EXPOSE 3001
+ARG PORT=3001
+ENV PORT=${PORT}
+EXPOSE ${PORT}
 
 CMD ["node", "--import", "tsx", "src/index.ts"]
