@@ -36,19 +36,13 @@ COLUMN bytes_generados   FORMAT 999,999,999
 COLUMN mensaje           FORMAT A80 WRAP
 COLUMN ejecutado_por     FORMAT A25
 
-EXEC DBMS_OUTPUT.PUT_LINE('============================================================');
-EXEC DBMS_OUTPUT.PUT_LINE('QUINDIOFLIX - CONFIGURACIÓN DE RESPALDO DBA');
-EXEC DBMS_OUTPUT.PUT_LINE('Ejecutar únicamente con cuenta DBA / SYSDBA');
-EXEC DBMS_OUTPUT.PUT_LINE('============================================================');
-EXEC DBMS_OUTPUT.PUT_LINE('');
-
+-- ============================================================
+-- QUINDIOFLIX - CONFIGURACIÓN DE RESPALDO DBA
+-- Ejecutar únicamente con cuenta DBA / SYSDBA
 -- ============================================================
 -- 0. CREAR DIRECTORY DE RESPALDO (si no existe)
 --    Ajuste '/opt/oracle/backups/quindioflix' según su servidor.
 -- ============================================================
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
-EXEC DBMS_OUTPUT.PUT_LINE('0. CREANDO DIRECTORY DE RESPALDO');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
 
 BEGIN
     EXECUTE IMMEDIATE
@@ -68,10 +62,6 @@ GRANT READ, WRITE ON DIRECTORY DIR_BACKUP_QUINDIOFLIX TO C_QUINDIOFLIX;
 -- ============================================================
 -- 1. TABLA DE AUDITORÍA DE BACKUPS
 -- ============================================================
-EXEC DBMS_OUTPUT.PUT_LINE('');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
-EXEC DBMS_OUTPUT.PUT_LINE('1. CREANDO TABLA DE AUDITORÍA BACKUP_LOG');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
 
 BEGIN
     EXECUTE IMMEDIATE
@@ -105,10 +95,6 @@ END;
 -- ============================================================
 -- 2. FUNCIÓN AUXILIAR: VALIDAR PRIVILEGIOS DBA
 -- ============================================================
-EXEC DBMS_OUTPUT.PUT_LINE('');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
-EXEC DBMS_OUTPUT.PUT_LINE('2. CREANDO FUNCIÓN DE VALIDACIÓN DBA');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
 
 CREATE OR REPLACE FUNCTION FN_ES_DBA RETURN BOOLEAN IS
     v_count NUMBER;
@@ -135,10 +121,6 @@ END;
 --      p_archivo      : nombre base del archivo .dmp (sin extensión)
 --      p_incluir_estadisticas : 'Y' para incluir ESTIMATE=STATISTICS
 -- ============================================================
-EXEC DBMS_OUTPUT.PUT_LINE('');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
-EXEC DBMS_OUTPUT.PUT_LINE('3. CREANDO PROCEDIMIENTO SP_BACKUP_QUINDIOFLIX');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
 
 CREATE OR REPLACE PROCEDURE SP_BACKUP_QUINDIOFLIX (
     p_tipo_backup          IN VARCHAR2 DEFAULT 'SCHEMA',
@@ -200,17 +182,18 @@ BEGIN
 
     COMMIT;
 
-    DBMS_OUTPUT.PUT_LINE('╔═══════════════════════════════════════════════════════════════');
-    DBMS_OUTPUT.PUT_LINE('║  QUINDIOFLIX - INICIANDO RESPALDO');
-    DBMS_OUTPUT.PUT_LINE('╠═══════════════════════════════════════════════════════════════');
-    DBMS_OUTPUT.PUT_LINE('║  Backup ID    : ' || v_backup_id);
-    DBMS_OUTPUT.PUT_LINE('║  Tipo         : ' || UPPER(p_tipo_backup));
-    DBMS_OUTPUT.PUT_LINE('║  Job          : ' || p_nombre_job);
-    DBMS_OUTPUT.PUT_LINE('║  Archivo DMP  : ' || v_dumpfile);
-    DBMS_OUTPUT.PUT_LINE('║  Log          : ' || v_logfile);
-    DBMS_OUTPUT.PUT_LINE('║  Directorio   : DIR_BACKUP_QUINDIOFLIX');
-    DBMS_OUTPUT.PUT_LINE('║  Ejecutado por: ' || USER);
-    DBMS_OUTPUT.PUT_LINE('╚═══════════════════════════════════════════════════════════════');
+    -- ╔═══════════════════════════════════════════════════════════════
+    -- ║  QUINDIOFLIX - INICIANDO RESPALDO
+    -- ╠═══════════════════════════════════════════════════════════════
+    -- ║  Backup ID    : ' || v_backup_id)
+    -- ║  Tipo         : ' || UPPER(p_tipo_backup))
+    -- ║  Job          : ' || p_nombre_job)
+    -- ║  Archivo DMP  : ' || v_dumpfile)
+    -- ║  Log          : ' || v_logfile)
+    -- ║  Directorio   : DIR_BACKUP_QUINDIOFLIX
+    -- ║  Ejecutado por: ' || USER
+    -- ╚═══════════════════════════════════════════════════════════════
+
 
     -- ----------------------------------------------------------------
     -- 3.4 Crear el job de Data Pump
@@ -333,15 +316,14 @@ BEGIN
 
     COMMIT;
 
-    DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('╔═══════════════════════════════════════════════════════════════');
-    DBMS_OUTPUT.PUT_LINE('║  QUINDIOFLIX - RESPALDO FINALIZADO');
-    DBMS_OUTPUT.PUT_LINE('╠═══════════════════════════════════════════════════════════════');
-    DBMS_OUTPUT.PUT_LINE('║  Estado       : ' || v_estado);
-    DBMS_OUTPUT.PUT_LINE('║  Duración     : ' || v_duracion || ' seg.');
-    DBMS_OUTPUT.PUT_LINE('║  Archivo      : ' || v_dumpfile);
-    DBMS_OUTPUT.PUT_LINE('║  Ruta (Oracle): DIR_BACKUP_QUINDIOFLIX');
-    DBMS_OUTPUT.PUT_LINE('╚═══════════════════════════════════════════════════════════════');
+    -- ╔═══════════════════════════════════════════════════════════════
+    -- ║  QUINDIOFLIX - RESPALDO FINALIZADO
+    -- ╠═══════════════════════════════════════════════════════════════
+    -- ║  Estado       : ' || v_estado
+    -- ║  Duración     : ' || v_duracion || ' seg.'
+    -- ║  Archivo      : ' || v_dumpfile
+    -- ║  Ruta (Oracle): DIR_BACKUP_QUINDIOFLIX
+    -- ╚═══════════════════════════════════════════════════════════════
 
 EXCEPTION
     WHEN e_no_dba THEN
@@ -382,10 +364,6 @@ END;
 --    Permite consultar el historial de backups realizados.
 --    Solo ejecutable por DBA.
 -- ============================================================
-EXEC DBMS_OUTPUT.PUT_LINE('');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
-EXEC DBMS_OUTPUT.PUT_LINE('4. CREANDO PROCEDIMIENTO SP_LISTAR_BACKUPS');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
 
 CREATE OR REPLACE PROCEDURE SP_LISTAR_BACKUPS (
     p_dias IN NUMBER DEFAULT 30
@@ -401,9 +379,9 @@ BEGIN
         RAISE e_no_dba;
     END IF;
 
-    DBMS_OUTPUT.PUT_LINE('╔═══════════════════════════════════════════════════════════════');
-    DBMS_OUTPUT.PUT_LINE('║  QUINDIOFLIX - HISTORIAL DE RESPALDOS (últimos ' || p_dias || ' días)');
-    DBMS_OUTPUT.PUT_LINE('╚═══════════════════════════════════════════════════════════════');
+    -- ╔═══════════════════════════════════════════════════════════════
+    -- ║  QUINDIOFLIX - HISTORIAL DE RESPALDOS (últimos ' || p_dias || ' días)
+    -- ╚═══════════════════════════════════════════════════════════════
 
     FOR r IN (
         SELECT backup_id,
@@ -458,10 +436,6 @@ END;
 -- ============================================================
 -- 5. PERMISOS DE EJECUCIÓN (SOLO DBA / ADMIN)
 -- ============================================================
-EXEC DBMS_OUTPUT.PUT_LINE('');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
-EXEC DBMS_OUTPUT.PUT_LINE('5. OTORGANDO PERMISOS (SOLO ADMIN / DBA)');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
 
 GRANT EXECUTE ON FN_ES_DBA TO ROL_ADMIN;
 
@@ -491,10 +465,6 @@ END;
 -- ============================================================
 -- 6. SINÓNIMO PÚBLICO (opcional, para acceso DBA directo)
 -- ============================================================
-EXEC DBMS_OUTPUT.PUT_LINE('');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
-EXEC DBMS_OUTPUT.PUT_LINE('6. CREANDO SINÓNIMOS PÚBLICOS');
-EXEC DBMS_OUTPUT.PUT_LINE('--------------------------------------------------------');
 
 CREATE OR REPLACE PUBLIC SYNONYM SP_BACKUP_QUINDIOFLIX FOR C_QUINDIOFLIX.SP_BACKUP_QUINDIOFLIX;
 CREATE OR REPLACE PUBLIC SYNONYM SP_LISTAR_BACKUPS FOR C_QUINDIOFLIX.SP_LISTAR_BACKUPS;
@@ -522,11 +492,6 @@ EXEC SP_LISTAR_BACKUPS(7);
 -- Consultar la tabla de auditoría directamente
 SELECT * FROM BACKUP_LOG ORDER BY fecha_inicio DESC;
 */
-
-EXEC DBMS_OUTPUT.PUT_LINE('');
-EXEC DBMS_OUTPUT.PUT_LINE('============================================================');
-EXEC DBMS_OUTPUT.PUT_LINE('CONFIGURACIÓN DE BACKUP FINALIZADA');
-EXEC DBMS_OUTPUT.PUT_LINE('============================================================');
 
 -- ============================================================
 -- FIN DEL SCRIPT DE BACKUP
